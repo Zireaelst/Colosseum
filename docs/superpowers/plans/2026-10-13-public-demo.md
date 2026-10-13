@@ -178,11 +178,11 @@ Run: `pnpm test && pnpm typecheck && pnpm build && git diff --check`
 
 Expected: zero failed tests, successful typecheck/build, and no whitespace errors.
 
-- [ ] **Step 3: Scan for secret and naming regressions**
+- [x] **Step 3: Scan for secret and naming regressions**
 
 Run tracked-file scans for private-key material, API-key assignments, `AgentPass`, and `beeple`; expect no matches.
 
-- [ ] **Step 4: Commit and push**
+- [x] **Step 4: Commit and push**
 
 ```bash
 git add README.md docs/demo.md docs/roadmap.md
@@ -190,6 +190,8 @@ git commit -m "docs: separate public simulation from live devnet"
 git push origin main
 ```
 
-- [ ] **Step 5: Deploy and verify**
+- [x] **Step 5: Deploy and verify**
 
 Deploy production with `.vercelignore` intact. Verify `/` and `/app` return HTTP 200, Vercel SSO protection remains disabled, and a browser can click `Launch demo` then complete the simulated allow/reject/cancel sequence without console errors.
+
+Result: 79 tests, typecheck, and production build passed. The production browser completed all four public-demo actions with no console errors and no Explorer transaction link.
