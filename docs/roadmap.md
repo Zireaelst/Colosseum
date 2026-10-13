@@ -34,7 +34,13 @@ Acceptance:
 - The UI previews payer, mint, base-unit amount, and recipient before broadcast.
 - At least one real devnet token transfer has a confirmed Explorer signature.
 
-Wallet proof, funding construction, preview, confirmation polling, and Explorer rendering are implemented and tested. No wallet transaction has been approved/broadcast in this environment, so the last acceptance item is open.
+Wallet proof, funding construction, preview, confirmation polling, exact
+transaction attribution, and Explorer rendering are implemented and tested. A
+funding signature is persisted only when the parsed transaction matches the
+connected wallet payer, derived source ATA, task ATA, devnet USDC mint, six
+decimals, and exact 10,000,000 base-unit source/destination deltas. No wallet
+transaction has been approved/broadcast in this environment, so the last
+acceptance item is open.
 
 ## M3 — x402 V2 exact purchase (`implemented; live settlement pending`)
 

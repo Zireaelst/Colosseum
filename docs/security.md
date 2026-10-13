@@ -72,9 +72,16 @@ no distributed lock, HA, managed rotation, backup, or multi-process guarantee.
 Production still needs durable shared storage, remote signing, reconciliation
 workers, incident handling, and monitored RPC redundancy.
 
-### Funding attribution limitation
+### Funding attribution
 
-The MVP funding poll requires both a confirmed signature and a task ATA balance at least equal to the allocation, but it does not yet prove that the observed balance increase came from that exact signature. The x402 settlement path records the facilitator settlement signature. Production must inspect the confirmed transaction's token balance changes and bind them to the configured source, destination, mint, and amount.
+The funding poll fetches the submitted confirmed transaction as `jsonParsed` and
+does not infer funding from the task ATA's current balance. Before persisting the
+funding signature, the backend matches the transaction's first signature and fee
+payer, the wallet's derived devnet-USDC ATA, the task ATA, the configured mint,
+six decimals, and exact `-10000000`/`+10000000` base-unit balance deltas. Missing,
+failed, malformed, or mismatched evidence cannot unlock the purchase route. This
+still trusts the configured devnet RPC response and does not turn the custodial
+backend policy into onchain enforcement.
 
 ## Required negative tests
 

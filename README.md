@@ -92,6 +92,9 @@ Run `pnpm merchant` beside `pnpm dev` after configuring the devnet facilitator a
 - No arbitrary paid URLs, marketplace, multichain routing, A2A, Swig, or custom Solana program.
 - A timeout after broadcast is pending, not a definite failure; funds remain reserved until reconciliation.
 - Cancellation prevents new purchases but cannot undo an already broadcast transaction.
-- Funding confirmation currently checks a confirmed signature plus the task ATA balance; production must attribute the exact token delta to that signature.
+- Funding confirmation attributes the submitted parsed transaction to the
+  connected wallet payer, derived source ATA, task ATA, devnet USDC mint, and
+  exact 10,000,000 base-unit token delta. The result still trusts the configured
+  devnet RPC response.
 - Groq, TypeSafe/Jev, facilitator, RPC, and merchant readiness are shown as booleans only; secret values are never returned by the task API.
 - The Vercel public walkthrough is deliberately simulated. A durable hosted live mode requires the P0 work in [the hosted MVP backlog](docs/superpowers/specs/2026-10-13-public-demo-design.md#backlog-for-a-fully-working-hosted-mvp).
