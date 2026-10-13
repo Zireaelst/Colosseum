@@ -57,7 +57,12 @@ Acceptance:
 - Reservation, settlement, signature, and reconciliation are idempotent.
 - Unsupported merchant, mint, network, recipient, amount, or redirect fails before signing.
 
-The fixed Express merchant returned a package-generated V2 devnet `exact` challenge in a local HTTP smoke test. The purchase path uses official x402 schema/header codecs and SVM signer, reserves before signing, retains ambiguous settlement, and is idempotent. A funded live settlement/signature remains open.
+The fixed Express merchant is deployed at a public Railway HTTPS endpoint and
+returned a package-generated V2 devnet `exact` challenge for the pinned mint,
+1,000 base units, and configured recipient. The purchase path uses official
+x402 schema/header codecs and SVM signer, reserves before signing, retains
+ambiguous settlement, and is idempotent. A funded live settlement/signature
+remains open.
 
 ## M4 — manager and specialists (`implemented; credentialed run pending`)
 
@@ -104,13 +109,14 @@ Current gate: the Pactlet landing page and `/app` public walkthrough use the pro
 - Missing or short `PACTLET_SESSION_SECRET` fails the live authentication route
   closed without affecting the browser-only public walkthrough.
 - The merchant validates its fixed recipient and refuses to listen unless the
-  live facilitator advertises x402 V2 Solana devnet `exact`. It now supports an
-  explicit public bind host and platform-provided `PORT`; deployment is still open.
+  live facilitator advertises x402 V2 Solana devnet `exact`. It is deployed on
+  Railway with an explicit public bind host and platform-provided `PORT`; its
+  public `/health` and unpaid `/research` challenge are verified.
 - Supabase Postgres now stores hosted tasks, mandates, encrypted task signers,
   delegations, reservations, settlements, and events. Row-locking database RPCs
   enforce reservation and idempotency transitions. A live concurrency test
   proved competing 3 USDC reservations cannot jointly exceed a 4 USDC budget.
 - All ledger tables have RLS enabled; direct `anon` and `authenticated` access
   is revoked. Supabase security and performance advisors reported no issues.
-- Still open: public HTTPS merchant hosting, production-grade managed remote
-  signing, and confirmed funding/x402 Explorer signatures.
+- Still open: production-grade managed remote signing and confirmed
+  funding/x402 Explorer signatures.

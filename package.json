@@ -11,7 +11,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "merchant": "tsx --env-file=.env merchant/server.ts",
+    "merchant": "tsx --env-file-if-exists=.env merchant/server.ts",
     "spike:x402": "node --experimental-strip-types scripts/spike/x402-compatibility.ts",
     "test": "vitest run",
     "test:watch": "vitest",

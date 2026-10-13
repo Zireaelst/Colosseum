@@ -92,9 +92,17 @@ pnpm dev
 pnpm merchant
 ```
 
-The marketing landing page is served at `/`; the public walkthrough and live-devnet interface are at `/app`.
+The marketing landing page is served at `/`; the public walkthrough and
+live-devnet interface are at `/app`. The current public deployment is
+https://pactlet-colosseum.vercel.app and the fixed demo merchant is
+https://pactlet-merchant-production.up.railway.app/research.
 
-`/app` defaults to **Public Demo**, a browser-only deterministic walkthrough of the 10/4/3 delegation, allowed purchase, budget rejection, cancellation, and post-cancellation rejection. It creates no signature or transfer. **Live Devnet** preserves the wallet-backed local flow, which still requires one long-running Node process, SQLite, and the separate merchant service.
+`/app` defaults to **Public Demo**, a browser-only deterministic walkthrough of
+the 10/4/3 delegation, allowed purchase, budget rejection, cancellation, and
+post-cancellation rejection. It creates no signature or transfer. **Live
+Devnet** uses hosted Supabase state and the public Railway merchant when all
+server-only production variables are present; the same flow remains available
+locally with SQLite and the separate merchant process.
 
 Set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` only in server-side local and
 deployment environments. The production runtime fails closed without both;
@@ -122,5 +130,6 @@ stays unavailable until funding is confirmed.
   devnet RPC response.
 - Groq, TypeSafe/Jev, facilitator, RPC, and merchant readiness are shown as booleans only; secret values are never returned by the task API.
 - The browser-only walkthrough remains deliberately simulated. Hosted live task
-  state is durable, but the paid path still requires a public HTTPS merchant and
-  a user-approved devnet funding transaction.
+  state and the public HTTPS merchant are available, but the paid path still
+  requires complete server-only production configuration and a user-approved
+  devnet funding transaction.

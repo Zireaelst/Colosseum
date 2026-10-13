@@ -43,7 +43,12 @@ Pactlet targets Solana devnet only. A connected wallet authenticates the user an
 
 The public walkthrough demonstrates hierarchical delegation, an allowed service request, an over-budget rejection, authority cancellation, a rejected retry, remaining balances, and audit events. This mode is deterministic and explicitly labeled `SIMULATED`; it does not fabricate a transaction signature.
 
-The live devnet workflow currently targets local, single-process operation. A fully hosted live workflow still requires durable transactional storage, durable authentication sessions, protected signer infrastructure, a public HTTPS merchant, provisioned devnet token accounts, and a verified x402 V2 `exact` settlement.
+The hosted workflow now has durable Supabase state, signed authentication
+sessions, and a public HTTPS merchant. It still requires complete server-only
+production configuration, provisioned devnet token accounts, a user-approved
+funding transaction, and a verified x402 V2 `exact` settlement. The backend
+signer remains a custodial encrypted prototype rather than production key
+management.
 
 ## Business Model
 
@@ -53,4 +58,3 @@ Pactlet can be offered as payment-policy infrastructure for teams operating auto
 
 - Website: <https://pactlet-colosseum.vercel.app>
 - Demo: <https://pactlet-colosseum.vercel.app/app>
-
