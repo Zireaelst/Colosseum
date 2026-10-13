@@ -85,5 +85,8 @@ Current gate: the Pactlet landing page and `/app` public walkthrough use the pro
   longer depend on a process-local session map.
 - Missing or short `PACTLET_SESSION_SECRET` fails the live authentication route
   closed without affecting the browser-only public walkthrough.
+- The merchant validates its fixed recipient and refuses to listen unless the
+  live facilitator advertises x402 V2 Solana devnet `exact`. It now supports an
+  explicit public bind host and platform-provided `PORT`; deployment is still open.
 - Still open: durable transactional ledger storage, encrypted task-signer storage,
   public HTTPS merchant hosting, and confirmed funding/x402 Explorer signatures.
