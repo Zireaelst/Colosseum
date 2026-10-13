@@ -4,30 +4,30 @@ import { WalletNonceStore } from "./wallet-nonce";
 import { TaskAccountStore } from "../solana/task-accounts";
 
 const globalNonceStore = globalThis as typeof globalThis & {
-  beepleWalletNonceStore?: WalletNonceStore;
-  beepleTaskAccountStore?: TaskAccountStore;
-  beepleWalletSessions?: Map<string, { address: string; expiresAt: number }>;
+  pactletWalletNonceStore?: WalletNonceStore;
+  pactletTaskAccountStore?: TaskAccountStore;
+  pactletWalletSessions?: Map<string, { address: string; expiresAt: number }>;
 };
 
 export const walletNonceStore =
-  globalNonceStore.beepleWalletNonceStore ??
+  globalNonceStore.pactletWalletNonceStore ??
   new WalletNonceStore(
     process.env.NEXT_PUBLIC_APP_ORIGIN ?? "http://localhost:3000",
   );
 
 if (process.env.NODE_ENV !== "production") {
-  globalNonceStore.beepleWalletNonceStore = walletNonceStore;
+  globalNonceStore.pactletWalletNonceStore = walletNonceStore;
 }
 
 export const taskAccountStore =
-  globalNonceStore.beepleTaskAccountStore ?? new TaskAccountStore();
+  globalNonceStore.pactletTaskAccountStore ?? new TaskAccountStore();
 const walletSessions =
-  globalNonceStore.beepleWalletSessions ??
+  globalNonceStore.pactletWalletSessions ??
   new Map<string, { address: string; expiresAt: number }>();
 
 if (process.env.NODE_ENV !== "production") {
-  globalNonceStore.beepleTaskAccountStore = taskAccountStore;
-  globalNonceStore.beepleWalletSessions = walletSessions;
+  globalNonceStore.pactletTaskAccountStore = taskAccountStore;
+  globalNonceStore.pactletWalletSessions = walletSessions;
 }
 
 export function createWalletSession(address: string, now = Date.now()): string {

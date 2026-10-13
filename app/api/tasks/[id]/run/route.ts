@@ -2,7 +2,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { runBeepleManager } from "../../../../../src/agents/orchestrator";
+import { runPactletManager } from "../../../../../src/agents/orchestrator";
 import {
   taskAccountStore,
   walletForSession,
@@ -22,7 +22,7 @@ export async function POST(
   context: { params: Promise<{ id: string }> },
 ) {
   const ownerWallet = walletForSession(
-    request.cookies.get("beeple_session")?.value,
+    request.cookies.get("pactlet_session")?.value,
   );
   if (!ownerWallet) {
     return NextResponse.json({ error: "WALLET_AUTH_REQUIRED" }, { status: 401 });
@@ -53,7 +53,7 @@ export async function POST(
       })
     : null;
 
-  const result = await runBeepleManager({
+  const result = await runPactletManager({
     prompt: body.data.prompt,
     purchase: async () => {
       if (!task.fundingSignature) {

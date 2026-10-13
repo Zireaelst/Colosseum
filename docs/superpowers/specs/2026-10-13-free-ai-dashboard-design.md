@@ -1,4 +1,4 @@
-# beeple free AI and dashboard design
+# pactlet free AI and dashboard design
 
 ## Goal
 

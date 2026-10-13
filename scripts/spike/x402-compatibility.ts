@@ -53,7 +53,7 @@ const merchant = express().use(
           network: DEVNET,
           payTo: signer.address,
         },
-        description: "beeple compatibility spike",
+        description: "pactlet compatibility spike",
         mimeType: "application/json",
       },
     },

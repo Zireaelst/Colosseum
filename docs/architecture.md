@@ -1,8 +1,8 @@
-# beeple architecture
+# pactlet architecture
 
 ## Objective and trust model
 
-beeple is a devnet-only, single-process hackathon MVP. It demonstrates a pluggable payment layer that checks task-scoped hierarchical authority at the instant an agent attempts an x402 purchase.
+pactlet is a devnet-only, single-process hackathon MVP. It demonstrates a pluggable payment layer that checks task-scoped hierarchical authority at the instant an agent attempts an x402 purchase.
 
 The backend is trusted. It owns the SQLite ledger, agent runtime context, per-task disposable signer, policy checks, payment reservation, and settlement reconciliation. Solana proves only the token movement and transaction signature. Delegation rules are not onchain-enforced.
 
@@ -38,7 +38,7 @@ The availability check and reservation write happen in one immediate SQLite tran
 1. The agent calls `purchase` with a configured service ID and idempotency key. It cannot submit a URL or signer.
 2. The server loads agent identity and delegation from runtime context, then rejects cancellation, expiry, or service mismatch.
 3. The server calls the exact allowlisted endpoint without following redirects and receives `PAYMENT-REQUIRED`.
-4. x402 libraries decode the challenge. beeple additionally matches V2, `exact`, devnet CAIP-2, devnet USDC mint, configured `payTo`, maximum amount, and resource identity.
+4. x402 libraries decode the challenge. pactlet additionally matches V2, `exact`, devnet CAIP-2, devnet USDC mint, configured `payTo`, maximum amount, and resource identity.
 5. One SQLite transaction creates or reuses the purchase request and reserves available budget.
 6. The task signer authorizes the x402 payment. The facilitator verifies and settles it on Solana devnet.
 7. A confirmed result consumes the reservation and stores the signature. A definite pre-broadcast failure releases it. A timeout or `settlement_pending` keeps it reserved until RPC reconciliation determines the final state.
@@ -54,8 +54,8 @@ Wallet Standard is used in the browser. The server issues a short-lived, origin-
 | Token owner authorized transfer | Solana/x402 signature verification |
 | Mint, destination and exact amount in payment | x402 SVM verification and Solana transaction |
 | Transaction confirmed | Solana devnet RPC and Explorer signature |
-| Hierarchical budget and child allocation | Trusted beeple backend + SQLite transaction |
-| Service allowlist, expiry and cancellation | Trusted beeple backend |
+| Hierarchical budget and child allocation | Trusted pactlet backend + SQLite transaction |
+| Service allowlist, expiry and cancellation | Trusted pactlet backend |
 | Agent identity | Trusted server runtime context |
 | Idempotent purchase outcome | SQLite unique constraints + reconciliation |
 

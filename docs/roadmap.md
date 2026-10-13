@@ -1,4 +1,4 @@
-# beeple roadmap
+# pactlet roadmap
 
 Deadline: 13 October 2026, 09:59 Europe/Istanbul. Build the narrow end-to-end demo before visual polish.
 

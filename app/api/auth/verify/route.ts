@@ -27,7 +27,7 @@ export async function POST(request: Request) {
       verified: true,
       address: parsed.data.address,
     });
-    response.cookies.set("beeple_session", createWalletSession(parsed.data.address), {
+    response.cookies.set("pactlet_session", createWalletSession(parsed.data.address), {
       httpOnly: true,
       sameSite: "strict",
       secure: process.env.NODE_ENV === "production",

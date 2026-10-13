@@ -29,7 +29,7 @@ app.use(
           payTo,
           maxTimeoutSeconds: 60,
         },
-        description: "beeple paid research brief",
+        description: "pactlet paid research brief",
         mimeType: "application/json",
       },
     },
@@ -38,12 +38,12 @@ app.use(
 );
 app.get("/research", (_request, response) => {
   response.json({
-    source: "beeple-demo-merchant",
+    source: "pactlet-demo-merchant",
     finding: "The paid research service was reached after x402 settlement.",
   });
 });
 app.get("/health", (_request, response) => response.json({ ok: true }));
 
 app.listen(port, "127.0.0.1", () => {
-  console.log(`beeple merchant listening on http://127.0.0.1:${port}`);
+  console.log(`pactlet merchant listening on http://127.0.0.1:${port}`);
 });

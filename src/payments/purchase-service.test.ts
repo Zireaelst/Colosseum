@@ -27,7 +27,7 @@ function challenge(
     x402Version: 2 as const,
     resource: {
       url: merchant.url,
-      description: "beeple research",
+      description: "pactlet research",
       mimeType: "application/json",
     },
     accepts: [

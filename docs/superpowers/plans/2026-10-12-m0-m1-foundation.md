@@ -1,4 +1,4 @@
-# beeple M0–M1 Foundation Implementation Plan
+# pactlet M0–M1 Foundation Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -14,7 +14,7 @@
 - Devnet USDC only: `4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU`.
 - All money values are integer token base units represented as `bigint` in policy code and decimal strings at persistence/API boundaries.
 - Children may narrow but never widen parent budget, service set, or expiry.
-- `beeple` is a placeholder; do not use AgentPass as the new name.
+- `pactlet` is the project name; do not use AgentPass as the project name.
 - No mainnet, real funds, deploy, PR, or Colosseum submission.
 
 ---

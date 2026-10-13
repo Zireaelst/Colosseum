@@ -1,7 +1,7 @@
 import type { Model } from "@openai/agents";
 import { describe, expect, test, vi } from "vitest";
 
-import { runBeepleManager } from "./orchestrator";
+import { runPactletManager } from "./orchestrator";
 
 const groqConfig = {
   apiKey: "test-key",
@@ -10,11 +10,11 @@ const groqConfig = {
   provider: "groq-free" as const,
 };
 
-describe("runBeepleManager", () => {
+describe("runPactletManager", () => {
   test("uses a labeled non-paying fallback when no AI key is configured", async () => {
     const purchase = vi.fn();
 
-    const result = await runBeepleManager(
+    const result = await runPactletManager(
       { prompt: "research this", purchase },
       {
         route: vi.fn().mockResolvedValue({
@@ -44,7 +44,7 @@ describe("runBeepleManager", () => {
     const model = { getResponse: vi.fn(), getStreamedResponse: vi.fn() } as unknown as Model;
     const executeAgent = vi.fn().mockResolvedValue("manager result");
 
-    const result = await runBeepleManager(
+    const result = await runPactletManager(
       { prompt: "analyze this", purchase: vi.fn() },
       {
         route: vi.fn().mockResolvedValue({
@@ -59,7 +59,7 @@ describe("runBeepleManager", () => {
     );
 
     expect(executeAgent).toHaveBeenCalledWith(
-      expect.objectContaining({ name: "beeple manager", model }),
+      expect.objectContaining({ name: "pactlet manager", model }),
       "analyze this",
     );
     expect(result).toMatchObject({
@@ -75,7 +75,7 @@ describe("runBeepleManager", () => {
     const executeAgent = vi.fn();
     const purchase = vi.fn();
 
-    const result = await runBeepleManager(
+    const result = await runPactletManager(
       { prompt: "unclear", purchase },
       {
         route: vi.fn().mockResolvedValue({

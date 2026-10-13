@@ -49,7 +49,7 @@ function dependencies(
   };
 }
 
-export function buildBeepleAgentGraph(input: {
+export function buildPactletAgentGraph(input: {
   model: Model;
   routing: RoutingDecision & { route: "research" | "analysis" };
   purchase(purchaseKey: string): Promise<PurchaseResult>;
@@ -57,7 +57,7 @@ export function buildBeepleAgentGraph(input: {
   const purchaseResearch = tool({
     name: "purchase_research",
     description:
-      "Purchase the one allowlisted beeple research service. Runtime policy supplies identity, endpoint, service, amount, and signer.",
+      "Purchase the one allowlisted pactlet research service. Runtime policy supplies identity, endpoint, service, amount, and signer.",
     parameters: z.object({ purchaseKey: z.string().min(1).max(100) }),
     execute: async ({ purchaseKey }) =>
       JSON.stringify(await input.purchase(purchaseKey), (_key, value) =>
@@ -79,7 +79,7 @@ export function buildBeepleAgentGraph(input: {
   });
   const specialist = input.routing.route === "research" ? research : analysis;
   const manager = new Agent({
-    name: "beeple manager",
+    name: "pactlet manager",
     model: input.model,
     instructions:
       `Own the final answer. Routing selected ${input.routing.route}. Call the available specialist once, then distinguish evidence, payment status, and limitations.`,
@@ -93,7 +93,7 @@ export function buildBeepleAgentGraph(input: {
   return { manager, research, analysis };
 }
 
-export async function runBeepleManager(
+export async function runPactletManager(
   input: {
     prompt: string;
     purchase(purchaseKey: string): Promise<PurchaseResult>;
@@ -124,7 +124,7 @@ export async function runBeepleManager(
 
   try {
     const model = await services.createModel(services.providerConfig);
-    const { manager } = buildBeepleAgentGraph({
+    const { manager } = buildPactletAgentGraph({
       model,
       routing: { ...routing, route: routing.route },
       purchase: input.purchase,

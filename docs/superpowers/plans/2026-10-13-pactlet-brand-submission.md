@@ -38,7 +38,7 @@
 - [ ] Update tests first to expect Pactlet-facing names and imports.
 - [ ] Run focused agent and authentication tests and confirm the old exports fail.
 - [ ] Rename implementation identifiers and all product copy.
-- [ ] Run `rg -n -i "beeple"` excluding `.git`, dependencies, and build output; expect no matches.
+- [ ] Scan case-insensitively for the former working name excluding `.git`, dependencies, and build output; expect no matches.
 - [ ] Run the focused tests again; expect all to pass.
 
 ### Task 3: Add the Turkish submission package

@@ -14,7 +14,7 @@ export async function GET(
   context: { params: Promise<{ id: string }> },
 ) {
   const ownerWallet = walletForSession(
-    request.cookies.get("beeple_session")?.value,
+    request.cookies.get("pactlet_session")?.value,
   );
   if (!ownerWallet) {
     return NextResponse.json({ error: "WALLET_AUTH_REQUIRED" }, { status: 401 });

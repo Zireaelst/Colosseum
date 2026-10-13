@@ -10,7 +10,7 @@ import { initializeTaskAuthority } from "../../../src/runtime/task-runtime";
 
 export async function POST(request: NextRequest) {
   const ownerWallet = walletForSession(
-    request.cookies.get("beeple_session")?.value,
+    request.cookies.get("pactlet_session")?.value,
   );
   if (!ownerWallet) {
     return NextResponse.json({ error: "WALLET_AUTH_REQUIRED" }, { status: 401 });

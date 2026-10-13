@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Connect beeple's manager/specialists to a free Groq-hosted model and turn the current page into a clear backend-driven demo dashboard.
+**Goal:** Connect pactlet's manager/specialists to a free Groq-hosted model and turn the current page into a clear backend-driven demo dashboard.
 
 **Architecture:** A server-only provider factory injects an OpenAI-compatible Chat Completions model into every Agents SDK agent. The UI consumes normalized task/run APIs through small React presentation components; all payment authority stays in the backend runtime context.
 
@@ -13,7 +13,7 @@
 ## Global Constraints
 
 - Solana devnet only; no mainnet or real-value funds.
-- `beeple` remains a placeholder project name; never use AgentPass as the project name.
+- `pactlet` is the project name; never use AgentPass as the project name.
 - No API key, signer bytes, wallet sessions, or raw provider errors may reach the client or logs.
 - No new UI framework or broad dependency expansion.
 - The missing-key mode must be labeled `demo-fallback` and must not call the purchase function.
@@ -45,7 +45,7 @@
 - Modify: `app/api/tasks/[id]/run/route.ts`
 
 **Interfaces:**
-- `runBeepleManager` returns `{ routing, executionMode, provider, model, output }`.
+- `runPactletManager` returns `{ routing, executionMode, provider, model, output }`.
 - It accepts an injected `runAgent` for tests and never purchases in `demo-fallback` or `uncertain` mode.
 
 - [x] Write failing tests for no-key fallback and injected provider execution.

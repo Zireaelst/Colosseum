@@ -19,6 +19,7 @@ describe("WalletNonceStore", () => {
     const wallet = walletFixture();
     const store = new WalletNonceStore("http://localhost:3000");
     const challenge = store.issue(wallet.address, now);
+    expect(challenge.message).toContain("pactlet wallet authentication");
     const signature = sign(
       null,
       Buffer.from(challenge.message),

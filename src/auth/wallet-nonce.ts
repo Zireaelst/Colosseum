@@ -41,7 +41,7 @@ export class WalletNonceStore {
     const nonce = randomBytes(16).toString("hex");
     const expiresAt = now + this.ttlMs;
     const message = [
-      "beeple wallet authentication",
+      "pactlet wallet authentication",
       `Origin: ${this.origin}`,
       `Address: ${canonicalAddress}`,
       `Nonce: ${nonce}`,

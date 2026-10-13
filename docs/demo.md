@@ -1,4 +1,4 @@
-# beeple three-minute demo
+# pactlet three-minute demo
 
 ## Script
 
@@ -7,7 +7,7 @@
 - **1:00:** Research calls the one allowlisted paid endpoint. Show its V2 `exact` challenge, reserved amount, confirmed devnet payment, and Solana Explorer signature.
 - **1:45:** Attempt an unknown service or over-budget amount. Show a backend rejection and demonstrate that no transaction signature was created.
 - **2:15:** Cancel research authority and retry. Show the cancellation rejection, unchanged available budget, and chronological events.
-- **2:45:** State the trust boundary: Solana proves the transfer; beeple's trusted backend enforces delegation, limits, expiry, and cancellation.
+- **2:45:** State the trust boundary: Solana proves the transfer; pactlet's trusted backend enforces delegation, limits, expiry, and cancellation.
 
 ## Evidence labels
 

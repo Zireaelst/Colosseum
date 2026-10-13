@@ -2,7 +2,7 @@
 
 ## Objective
 
-Replace the temporary `beeple` name with `pactlet` across the repository and add a concise Turkish submission document for the Colosseum pitch and demo. Payment semantics, devnet-only limits, and the trusted-backend security claim remain unchanged.
+Replace the temporary working name with `pactlet` across the repository and add a concise Turkish submission document for the Colosseum pitch and demo. Payment semantics, devnet-only limits, and the trusted-backend security claim remain unchanged.
 
 ## Rename scope
 

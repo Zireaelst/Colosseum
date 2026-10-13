@@ -4,7 +4,7 @@ Verified on 12 October 2026 from Europe/Istanbul. Live services can change; star
 
 ## Environment
 
-- Git: clean `main` at initial commit `4fbc352` before beeple changes.
+- Git: clean `main` at initial commit `4fbc352` before pactlet changes.
 - Node.js: `v22.23.2` reported in the repository shell.
 - pnpm: `12.4.1` reported before project pinning.
 - Solana Developer MCP and OKX MCP: not connected in this session.
@@ -36,7 +36,7 @@ Live `GET https://x402.org/facilitator/supported` returned a kind with:
 - `network: solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1`
 - facilitator fee payer `CKPK…WYp5`
 
-The public facilitator is suitable for development/testnet only. beeple must recheck this tuple at startup and fail closed if it disappears.
+The public facilitator is suitable for development/testnet only. pactlet must recheck this tuple at startup and fail closed if it disappears.
 
 Solana devnet RPC parsed `4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU` as an initialized, six-decimal SPL Token mint owned by the Token Program. For the documented owner `seFk…fsRX`, the Kit-compatible ATA derivation produced `Ghw5…4DNP`; devnet RPC returned that exact initialized account for the same mint and owner.
 

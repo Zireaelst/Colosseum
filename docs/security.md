@@ -1,8 +1,8 @@
-# beeple security model
+# pactlet security model
 
 ## Security claim
 
-Solana devnet and the x402 SVM scheme prove the signed token transfer. beeple's hierarchical authorization is enforced by a trusted backend. This prototype is custodial, single-process, and unsuitable for real funds.
+Solana devnet and the x402 SVM scheme prove the signed token transfer. pactlet's hierarchical authorization is enforced by a trusted backend. This prototype is custodial, single-process, and unsuitable for real funds.
 
 ## Assets and trust boundaries
 
@@ -38,7 +38,7 @@ Available amount includes settled spend, pending reservations, and active child 
 
 ### Timeout and ambiguous settlement
 
-A timeout is not a failure. If a transaction may have been broadcast, the reservation remains pending and the signature is reconciled through devnet RPC. beeple does not resign or retry until the outcome is known. Only a definite pre-broadcast failure releases the reservation.
+A timeout is not a failure. If a transaction may have been broadcast, the reservation remains pending and the signature is reconciled through devnet RPC. pactlet does not resign or retry until the outcome is known. Only a definite pre-broadcast failure releases the reservation.
 
 ### Cancellation and expiry
 

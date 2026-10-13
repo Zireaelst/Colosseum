@@ -1,8 +1,8 @@
-# beeple repository instructions
+# pactlet repository instructions
 
 ## Product
 
-`beeple` is the temporary project name. Do not rename it to AgentPass. The MVP demonstrates task-scoped hierarchical authority enforced at the moment an AI agent attempts an x402 payment.
+`pactlet` is the project name. Do not rename it to AgentPass. The MVP demonstrates task-scoped hierarchical authority enforced at the moment an AI agent attempts an x402 payment.
 
 The user connects a Solana wallet, funds a task with devnet test tokens, and delegates narrower budgets, service allowlists, and expiries to a manager and two specialist agents. An allowed paid request produces a real Solana devnet signature. Disallowed requests are rejected before signing or broadcasting.
 
