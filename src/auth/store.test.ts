@@ -1,10 +1,12 @@
-import { generateKeyPairSync, sign } from "node:crypto";
+import { generateKeyPairSync, randomBytes, sign } from "node:crypto";
 
 import { getAddressDecoder } from "@solana/kit";
 import { describe, expect, test } from "vitest";
 
 import {
   AuthConfigurationError,
+  TaskSignerConfigurationError,
+  assertTaskAccountStoreConfigured,
   createWalletSession,
   issueWalletChallenge,
   verifyWalletChallenge,
@@ -39,6 +41,24 @@ describe("auth store wrappers", () => {
         PACTLET_SESSION_SECRET: "too-short",
       }),
     ).toThrow(AuthConfigurationError);
+  });
+
+  test("fails live task creation closed without persistent signer configuration", () => {
+    expect(() => assertTaskAccountStoreConfigured({})).toThrow(
+      TaskSignerConfigurationError,
+    );
+    expect(() =>
+      assertTaskAccountStoreConfigured({
+        PACTLET_DATABASE_PATH: "./pactlet.db",
+        PACTLET_SIGNER_MASTER_KEY: "invalid",
+      }),
+    ).toThrow(TaskSignerConfigurationError);
+    expect(() =>
+      assertTaskAccountStoreConfigured({
+        PACTLET_DATABASE_PATH: "./pactlet.db",
+        PACTLET_SIGNER_MASTER_KEY: randomBytes(32).toString("base64url"),
+      }),
+    ).not.toThrow();
   });
 
   test("verifies challenges and sessions across independent calls", () => {

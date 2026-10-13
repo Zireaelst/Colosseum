@@ -55,7 +55,13 @@ function settled(): SettleResponse {
 
 const openLedgers: Ledger[] = [];
 
-function fixture(paymentRequired: unknown = challenge()) {
+function fixture(
+  paymentRequired: unknown = challenge(),
+  signerForTask: () =>
+    | import("@solana/kit").KeyPairSigner
+    | Promise<import("@solana/kit").KeyPairSigner> = () =>
+    ({ address: "task-signer" }) as never,
+) {
   const ledger = Ledger.memory();
   openLedgers.push(ledger);
   ledger.createTask({
@@ -86,7 +92,7 @@ function fixture(paymentRequired: unknown = challenge()) {
     ledger,
     merchant,
     transport,
-    signerForTask: () => ({ address: "task-signer" }) as never,
+    signerForTask,
   });
   return { ledger, service, transport };
 }
@@ -115,6 +121,26 @@ describe("PurchaseService", () => {
     });
     expect(transport.pay).toHaveBeenCalledTimes(1);
     expect(ledger.availableAmount("research-agent", now + 1)).toBe(3_999_000n);
+  });
+
+  test("awaits the backend signer before passing it to the payment transport", async () => {
+    const signer = { address: "async-task-signer" } as never;
+    const { service, transport } = fixture(
+      challenge(),
+      async () => signer,
+    );
+
+    await service.purchase({
+      taskId: "task-1",
+      delegationId: "research-agent",
+      purchaseKey: "async-signer",
+      serviceId: merchant.serviceId,
+      now,
+    });
+
+    expect(transport.pay).toHaveBeenCalledWith(
+      expect.objectContaining({ signer }),
+    );
   });
 
   test("replays the stored outcome without creating a second payment", async () => {

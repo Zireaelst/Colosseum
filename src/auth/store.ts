@@ -1,4 +1,5 @@
 import { TaskAccountStore } from "../solana/task-accounts";
+import { parseSignerMasterKey } from "../solana/task-signer-vault";
 import {
   createSessionToken,
   issueWalletChallenge as issueSignedWalletChallenge,
@@ -11,14 +12,64 @@ const globalNonceStore = globalThis as typeof globalThis & {
   pactletTaskAccountStore?: TaskAccountStore;
 };
 
+type AuthEnvironment = Record<string, string | undefined>;
+
+export class TaskSignerConfigurationError extends Error {
+  readonly code = "TASK_SIGNER_NOT_CONFIGURED";
+
+  constructor() {
+    super("Persistent task signer storage is not configured");
+    this.name = "TaskSignerConfigurationError";
+  }
+}
+
+function taskAccountConfiguration(environment: AuthEnvironment): {
+  databasePath: string;
+  masterKey: Uint8Array;
+} {
+  const databasePath = environment.PACTLET_DATABASE_PATH?.trim() ?? "";
+  const encodedMasterKey =
+    environment.PACTLET_SIGNER_MASTER_KEY?.trim() ?? "";
+  if (!databasePath || !encodedMasterKey) {
+    throw new TaskSignerConfigurationError();
+  }
+  try {
+    return {
+      databasePath,
+      masterKey: parseSignerMasterKey(encodedMasterKey),
+    };
+  } catch {
+    throw new TaskSignerConfigurationError();
+  }
+}
+
+export function assertTaskAccountStoreConfigured(
+  environment: AuthEnvironment = process.env,
+): void {
+  taskAccountConfiguration(environment);
+}
+
+function createTaskAccountStore(environment: AuthEnvironment): TaskAccountStore {
+  try {
+    const configuration = taskAccountConfiguration(environment);
+    return TaskAccountStore.open(
+      configuration.databasePath,
+      configuration.masterKey,
+    );
+  } catch (error) {
+    if (error instanceof TaskSignerConfigurationError) {
+      return new TaskAccountStore();
+    }
+    throw error;
+  }
+}
+
 export const taskAccountStore =
-  globalNonceStore.pactletTaskAccountStore ?? new TaskAccountStore();
+  globalNonceStore.pactletTaskAccountStore ?? createTaskAccountStore(process.env);
 
 if (process.env.NODE_ENV !== "production") {
   globalNonceStore.pactletTaskAccountStore = taskAccountStore;
 }
-
-type AuthEnvironment = Record<string, string | undefined>;
 
 export class AuthConfigurationError extends Error {
   readonly code = "AUTH_NOT_CONFIGURED";

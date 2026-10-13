@@ -88,5 +88,9 @@ Current gate: the Pactlet landing page and `/app` public walkthrough use the pro
 - The merchant validates its fixed recipient and refuses to listen unless the
   live facilitator advertises x402 V2 Solana devnet `exact`. It now supports an
   explicit public bind host and platform-provided `PORT`; deployment is still open.
-- Still open: durable transactional ledger storage, encrypted task-signer storage,
-  public HTTPS merchant hosting, and confirmed funding/x402 Explorer signatures.
+- Disposable task signer seeds and public task metadata now persist in local
+  SQLite. Seeds use AES-256-GCM with task-ID binding and a server-only master key;
+  live task creation fails closed when the key/database configuration is missing.
+  This is an encrypted local vault, not production KMS or hosted durable storage.
+- Still open: durable hosted transactional storage, public HTTPS merchant hosting,
+  managed remote signing, and confirmed funding/x402 Explorer signatures.

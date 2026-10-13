@@ -7,7 +7,8 @@ Solana devnet and the x402 SVM scheme prove the signed token transfer. pactlet's
 ## Assets and trust boundaries
 
 - User wallet: remains in the wallet provider and signs authentication/funding only.
-- Task signer: disposable devnet secret held only by the backend process.
+- Task signer: disposable devnet seed encrypted at rest in the local SQLite
+  database and reconstructed only inside the backend purchase path.
 - API credentials: server-only environment values.
 - Wallet authentication: five-minute signed challenges and thirty-minute
   HMAC-authenticated session cookies, bound to the configured application origin.
@@ -18,7 +19,7 @@ Solana devnet and the x402 SVM scheme prove the signed token transfer. pactlet's
 
 ### Secret exposure
 
-Agents receive only a purchase tool. Secrets never enter prompts, client bundles, logs, events, error payloads, or git. Production would require remote/hardware-backed signing and a separately designed custody model.
+Agents receive only a purchase tool. Secrets never enter prompts, client bundles, logs, events, error payloads, or git. Task signer seeds are encrypted with AES-256-GCM using a server-only master key and task-ID additional authenticated data; swapping or modifying an encrypted record fails authentication. The decrypted seed exists only while importing a non-extractable backend signer and its byte buffer is then cleared. Production would still require remote/hardware-backed signing, managed key rotation, backup/recovery, and a separately designed custody model.
 
 The dashboard receives only boolean provider-readiness flags. `AI_API_KEY`, `TYPESAFE_API_KEY`, RPC credentials, and task signer material remain server-only. Model tracing is disabled so prompts and tool results are not exported through the Agents SDK tracing path.
 
@@ -61,12 +62,15 @@ Startup checks `/supported` for the exact protocol/network/scheme tuple. Every c
 
 ### Database or process failure
 
-Wallet challenges and sessions now survive process replacement because they are
-cryptographically verifiable rather than stored in memory. Task signers and task
-account metadata are still process-local, while WAL/transaction semantics protect
-only the local ledger. There is no distributed lock, HA, backup, or multi-process
-guarantee. Production needs encrypted signer storage, durable shared storage,
-reconciliation workers, incident handling, and monitored RPC redundancy.
+Wallet challenges and sessions survive process replacement because they are
+cryptographically verifiable rather than stored in memory. Task account metadata,
+funding signatures, and AES-256-GCM-encrypted signer seeds now survive a local
+process restart in SQLite when `PACTLET_DATABASE_PATH` and
+`PACTLET_SIGNER_MASTER_KEY` are configured. Live task creation fails closed when
+that configuration is absent or invalid. This is not a production KMS: there is
+no distributed lock, HA, managed rotation, backup, or multi-process guarantee.
+Production still needs durable shared storage, remote signing, reconciliation
+workers, incident handling, and monitored RPC redundancy.
 
 ### Funding attribution limitation
 

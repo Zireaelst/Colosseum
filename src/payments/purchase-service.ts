@@ -59,7 +59,7 @@ export class PurchaseService {
       ledger: Ledger;
       merchant: MerchantService;
       transport: PaymentTransport;
-      signerForTask(taskId: string): KeyPairSigner;
+      signerForTask(taskId: string): KeyPairSigner | Promise<KeyPairSigner>;
     },
   ) {}
 
@@ -185,7 +185,7 @@ export class PurchaseService {
       const settlement = await transport.pay({
         url: merchant.url,
         requirement: selected,
-        signer: this.dependencies.signerForTask(input.taskId),
+        signer: await this.dependencies.signerForTask(input.taskId),
         onSigned,
       });
 
