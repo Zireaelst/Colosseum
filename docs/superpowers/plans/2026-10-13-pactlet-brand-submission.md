@@ -8,6 +8,8 @@
 
 **Tech Stack:** Next.js 16.4, TypeScript 5.9, Vitest 5, OpenAI Agents SDK, Solana Kit, x402 V2, SQLite, Markdown, git.
 
+**Status:** Implemented. Pactlet branding, Turkish submission copy, landing page, `/app` shell, tests, typecheck, and production build are verified; real devnet settlement remains a separate live-evidence gate.
+
 ## Global Constraints
 
 - Solana devnet only; no mainnet configuration or funds.

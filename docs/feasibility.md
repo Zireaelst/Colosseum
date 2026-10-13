@@ -48,7 +48,7 @@ Circle's public faucet lists Solana Devnet and currently offers 20 test USDC per
 - `node --input-type=module -e '…'` opened an in-memory better-sqlite3 database and returned `{ ok: 1 }`.
 - `pnpm spike:x402` fetched the live `/supported` response and constructed the x402 buyer and Express resource server.
 - A local Express smoke test returned HTTP 402 with a package-generated V2 `exact` challenge for the pinned devnet network, USDC mint, 1,000 base units, and fixed recipient.
-- The Agents SDK constructs an OpenAI-compatible Chat Completions model for Groq's free `openai/gpt-oss-20b`; provider creation is locally tested without a network call. Groq documents tool use for this model. A credentialed inference remains unverified until `.env.local` is filled.
+- The Agents SDK constructs an OpenAI-compatible Chat Completions model for Groq's free `openai/gpt-oss-20b`; provider creation is locally tested without a network call. Groq documents tool use for this model. A credentialed inference remains unverified until `.env` is filled.
 - `pnpm test` passes 71 policy, ledger, wallet, funding, purchase, transport, routing, provider, orchestrator, readiness, and dashboard-view-model tests.
 - `pnpm typecheck` and `pnpm build` complete successfully.
 

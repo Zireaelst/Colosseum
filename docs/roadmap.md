@@ -76,4 +76,4 @@ Acceptance:
 - `pnpm test`, `pnpm typecheck`, and `pnpm build` pass.
 - README and three-minute demo label every real and simulated component accurately.
 
-Current gate: 71 tests, typecheck, and production build pass. Remaining critical evidence is one user-approved devnet funding transaction followed by one real x402 settlement and Explorer verification. The live Groq and Jev calls remain credential-gated; `.env.local` is intentionally not populated in the repository.
+Current gate: 71 tests, typecheck, and production build pass. The Pactlet landing page and `/app` MVP shell use the provided brand assets. Remaining critical evidence is one user-approved devnet funding transaction followed by one real x402 settlement and Explorer verification. The live Groq and Jev calls remain credential-gated; local `.env` secrets are intentionally not committed.
