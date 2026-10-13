@@ -1,0 +1,15 @@
+/* Pactlet brand tokens. Add to your project stylesheet. */
+:root {
+  --pactlet-midnight: #0B1016;
+  --pactlet-surface: #151D24;
+  --pactlet-lime: #CBFF69;
+  --pactlet-violet: #8970FF;
+  --pactlet-white: #F7F8FA;
+  --pactlet-muted: #9DA8B2;
+  --pactlet-border: #2A3641;
+  --pactlet-radius: 20px;
+}
+/* Preferred CSS stack; fonts themselves are not redistributed. */
+.pactlet-heading { font-family: Inter, system-ui, sans-serif; letter-spacing: -.035em; font-weight: 750; }
+.pactlet-body { font-family: Inter, system-ui, sans-serif; }
+.pactlet-mono { font-family: "IBM Plex Mono", ui-monospace, monospace; }

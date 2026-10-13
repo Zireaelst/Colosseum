@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="340" viewBox="0 0 1600 340" role="img" aria-label="Pactlet section-divider"><defs>
+<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0B1016"/><stop offset=".8" stop-color="#111A20"/><stop offset="1" stop-color="#15211F"/></linearGradient>
+<linearGradient id="glass" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#1C2932"/><stop offset="1" stop-color="#10171D"/></linearGradient>
+<linearGradient id="lime" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#E6FFA4"/><stop offset="1" stop-color="#B7EF50"/></linearGradient>
+<linearGradient id="violet" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#AF91FF"/><stop offset="1" stop-color="#735AE3"/></linearGradient>
+<radialGradient id="glow"><stop offset="0" stop-color="#CBFF69" stop-opacity=".28"/><stop offset="1" stop-color="#CBFF69" stop-opacity="0"/></radialGradient>
+<radialGradient id="pglow"><stop offset="0" stop-color="#8970FF" stop-opacity=".22"/><stop offset="1" stop-color="#8970FF" stop-opacity="0"/></radialGradient>
+<pattern id="grid" width="52" height="52" patternUnits="userSpaceOnUse"><path d="M52 0H0V52" fill="none" stroke="#FFFFFF" stroke-opacity=".028" stroke-width="1"/></pattern>
+<marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M1 1L7 4L1 7" fill="none" stroke="#CBFF69" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker>
+</defs><rect x="0" y="0" width="1600" height="340" rx="0" fill="url(#bg)"/><rect x="0" y="0" width="1600" height="340" rx="0" fill="url(#grid)"/><ellipse cx="850" cy="160" rx="450" ry="450" fill="url(#glow)"/><path d="M0 191H420Q450 191 450 163V121Q450 95 480 95H670Q700 95 700 124V193H820Q850 193 850 167V135Q850 110 882 110H1050Q1080 110 1080 141V198H1600" fill="none" stroke="#CBFF69" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" opacity="0.55"/><circle cx="450" cy="163" r="9" fill="#CBFF69"/><circle cx="700" cy="193" r="9" fill="#CBFF69"/><circle cx="850" cy="167" r="9" fill="#CBFF69"/><circle cx="1080" cy="198" r="9" fill="#CBFF69"/></svg>

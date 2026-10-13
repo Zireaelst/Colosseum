@@ -1,0 +1,25 @@
+{
+  "brand": "Pactlet",
+  "status": "brand concept asset kit",
+  "palette": {
+    "midnight": "#0B1016",
+    "surface": "#151D24",
+    "lime": "#CBFF69",
+    "violet": "#8970FF",
+    "offWhite": "#F7F8FA",
+    "mutedText": "#9DA8B2",
+    "borders": "#2A3641"
+  },
+  "typography": {
+    "suggestedHeading": "Inter Display / Inter",
+    "suggestedBody": "Inter",
+    "suggestedCode": "IBM Plex Mono or any monospace"
+  },
+  "logoDesign": "Rounded single-stroke geometric P monogram inspired by selected user concept. These files focus on non-logo assets.",
+  "taglines": [
+    "Let agents pay. You set the limits.",
+    "Delegate tasks. Define the limits.",
+    "Permission before payment."
+  ],
+  "note": "Mock UI and code on illustrations are CONCEPTUAL. This devnet MVP is backend-enforced, custodial and not yet production-ready."
+}
