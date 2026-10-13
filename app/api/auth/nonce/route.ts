@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { walletNonceStore } from "../../../../src/auth/store";
+import {
+  AuthConfigurationError,
+  issueWalletChallenge,
+} from "../../../../src/auth/store";
 
 const requestSchema = z.object({ address: z.string().min(32).max(64) });
 
@@ -12,8 +15,14 @@ export async function POST(request: Request) {
   }
 
   try {
-    return NextResponse.json(walletNonceStore.issue(parsed.data.address));
-  } catch {
+    return NextResponse.json(issueWalletChallenge(parsed.data.address));
+  } catch (error) {
+    if (error instanceof AuthConfigurationError) {
+      return NextResponse.json(
+        { error: error.code },
+        { status: 503 },
+      );
+    }
     return NextResponse.json({ error: "INVALID_ADDRESS" }, { status: 400 });
   }
 }

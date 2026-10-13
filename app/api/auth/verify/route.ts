@@ -2,8 +2,9 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import {
+  AuthConfigurationError,
   createWalletSession,
-  walletNonceStore,
+  verifyWalletChallenge,
 } from "../../../../src/auth/store";
 
 const requestSchema = z.object({
@@ -19,7 +20,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = walletNonceStore.verify(parsed.data);
+    const result = verifyWalletChallenge(parsed.data);
     if (!result.ok) {
       return NextResponse.json({ error: result.code }, { status: 401 });
     }
@@ -35,7 +36,13 @@ export async function POST(request: Request) {
       path: "/",
     });
     return response;
-  } catch {
+  } catch (error) {
+    if (error instanceof AuthConfigurationError) {
+      return NextResponse.json(
+        { error: error.code },
+        { status: 503 },
+      );
+    }
     return NextResponse.json({ error: "INVALID_ADDRESS" }, { status: 400 });
   }
 }

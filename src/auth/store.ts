@@ -1,50 +1,91 @@
-import { randomBytes } from "node:crypto";
-
-import { WalletNonceStore } from "./wallet-nonce";
 import { TaskAccountStore } from "../solana/task-accounts";
+import {
+  createSessionToken,
+  issueWalletChallenge as issueSignedWalletChallenge,
+  verifyWalletChallenge as verifySignedWalletChallenge,
+  walletFromSessionToken,
+  type WalletVerificationResult,
+} from "./signed-wallet-auth";
 
 const globalNonceStore = globalThis as typeof globalThis & {
-  pactletWalletNonceStore?: WalletNonceStore;
   pactletTaskAccountStore?: TaskAccountStore;
-  pactletWalletSessions?: Map<string, { address: string; expiresAt: number }>;
 };
-
-export const walletNonceStore =
-  globalNonceStore.pactletWalletNonceStore ??
-  new WalletNonceStore(
-    process.env.NEXT_PUBLIC_APP_ORIGIN ?? "http://localhost:3000",
-  );
-
-if (process.env.NODE_ENV !== "production") {
-  globalNonceStore.pactletWalletNonceStore = walletNonceStore;
-}
 
 export const taskAccountStore =
   globalNonceStore.pactletTaskAccountStore ?? new TaskAccountStore();
-const walletSessions =
-  globalNonceStore.pactletWalletSessions ??
-  new Map<string, { address: string; expiresAt: number }>();
 
 if (process.env.NODE_ENV !== "production") {
   globalNonceStore.pactletTaskAccountStore = taskAccountStore;
-  globalNonceStore.pactletWalletSessions = walletSessions;
 }
 
-export function createWalletSession(address: string, now = Date.now()): string {
-  const token = randomBytes(32).toString("base64url");
-  walletSessions.set(token, { address, expiresAt: now + 30 * 60_000 });
-  return token;
+type AuthEnvironment = Record<string, string | undefined>;
+
+export class AuthConfigurationError extends Error {
+  readonly code = "AUTH_NOT_CONFIGURED";
+
+  constructor() {
+    super("Wallet authentication is not configured");
+    this.name = "AuthConfigurationError";
+  }
+}
+
+function authConfiguration(environment: AuthEnvironment): {
+  origin: string;
+  secret: string;
+} {
+  const origin =
+    environment.NEXT_PUBLIC_APP_ORIGIN?.trim() || "http://localhost:3000";
+  const secret = environment.PACTLET_SESSION_SECRET?.trim() ?? "";
+  if (secret.length < 32) throw new AuthConfigurationError();
+  return { origin, secret };
+}
+
+export function issueWalletChallenge(
+  walletAddress: string,
+  now = Date.now(),
+  environment: AuthEnvironment = process.env,
+) {
+  const { origin, secret } = authConfiguration(environment);
+  return issueSignedWalletChallenge({
+    address: walletAddress,
+    origin,
+    secret,
+    now,
+  });
+}
+
+export function verifyWalletChallenge(
+  input: {
+    address: string;
+    message: string;
+    signature: string;
+    now?: number;
+  },
+  environment: AuthEnvironment = process.env,
+): WalletVerificationResult {
+  const { origin, secret } = authConfiguration(environment);
+  return verifySignedWalletChallenge({ ...input, origin, secret });
+}
+
+export function createWalletSession(
+  address: string,
+  now = Date.now(),
+  environment: AuthEnvironment = process.env,
+): string {
+  const { secret } = authConfiguration(environment);
+  return createSessionToken({ address, secret, now });
 }
 
 export function walletForSession(
   token: string | undefined,
   now = Date.now(),
+  environment: AuthEnvironment = process.env,
 ): string | null {
-  if (!token) return null;
-  const session = walletSessions.get(token);
-  if (!session || session.expiresAt <= now) {
-    walletSessions.delete(token);
-    return null;
+  try {
+    const { secret } = authConfiguration(environment);
+    return walletFromSessionToken({ token, secret, now });
+  } catch (error) {
+    if (error instanceof AuthConfigurationError) return null;
+    throw error;
   }
-  return session.address;
 }

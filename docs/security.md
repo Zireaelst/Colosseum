@@ -9,6 +9,8 @@ Solana devnet and the x402 SVM scheme prove the signed token transfer. pactlet's
 - User wallet: remains in the wallet provider and signs authentication/funding only.
 - Task signer: disposable devnet secret held only by the backend process.
 - API credentials: server-only environment values.
+- Wallet authentication: five-minute signed challenges and thirty-minute
+  HMAC-authenticated session cookies, bound to the configured application origin.
 - Policy state: authoritative SQLite records, not model text or browser state.
 - External input: wallet messages, x402 challenges, facilitator/RPC replies, merchant responses, and model outputs are untrusted.
 
@@ -32,6 +34,15 @@ Purchase input uses configured service IDs, not URLs. The HTTP client uses fixed
 
 A task-scoped purchase key is unique. Legitimate retries return the existing state/result. The SVM facilitator's duplicate-settlement protection complements, but does not replace, the application ledger.
 
+Wallet challenges no longer depend on a process-local nonce map. Their complete
+claims are authenticated with a server-only HMAC and expire after five minutes;
+wallet ownership is still proven with an Ed25519 signature over the exact message.
+Sessions are also signed and expire after thirty minutes, so they remain verifiable
+across serverless cold starts. A captured, already-signed challenge can be replayed
+within its short validity window to obtain an equivalent session for the same
+wallet; HTTPS, strict-SameSite HTTP-only cookies, and the short expiry limit this
+prototype risk. Durable one-time challenge consumption remains production backlog.
+
 ### Concurrent overspend
 
 Available amount includes settled spend, pending reservations, and active child allocations. Calculation and reservation are one SQLite immediate transaction. A unique request key and transactional write prevent two concurrent requests from both spending the same availability.
@@ -50,7 +61,12 @@ Startup checks `/supported` for the exact protocol/network/scheme tuple. Every c
 
 ### Database or process failure
 
-WAL/transaction semantics protect the local demo, but there is no distributed lock, HA, backup, or multi-process guarantee. Production needs durable shared storage, reconciliation workers, incident handling, and monitored RPC redundancy.
+Wallet challenges and sessions now survive process replacement because they are
+cryptographically verifiable rather than stored in memory. Task signers and task
+account metadata are still process-local, while WAL/transaction semantics protect
+only the local ledger. There is no distributed lock, HA, backup, or multi-process
+guarantee. Production needs encrypted signer storage, durable shared storage,
+reconciliation workers, incident handling, and monitored RPC redundancy.
 
 ### Funding attribution limitation
 

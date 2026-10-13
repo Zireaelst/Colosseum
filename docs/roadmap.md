@@ -77,3 +77,13 @@ Acceptance:
 - README and three-minute demo label every real and simulated component accurately.
 
 Current gate: the Pactlet landing page and `/app` public walkthrough use the provided brand assets, and the complete automated suite, typecheck, and production build are required before each deployment. Remaining critical evidence is one user-approved devnet funding transaction followed by one real x402 settlement and Explorer verification. The live Groq and Jev calls remain credential-gated; local `.env` secrets are intentionally not committed. Durable hosted-live requirements are prioritized as P0–P2 in `docs/superpowers/specs/2026-10-13-public-demo-design.md`.
+
+### Hosted-live P0 progress
+
+- Wallet challenges are now HMAC-signed, origin-bound, and valid for five minutes.
+- Wallet sessions are cryptographically verifiable for thirty minutes and no
+  longer depend on a process-local session map.
+- Missing or short `PACTLET_SESSION_SECRET` fails the live authentication route
+  closed without affecting the browser-only public walkthrough.
+- Still open: durable transactional ledger storage, encrypted task-signer storage,
+  public HTTPS merchant hosting, and confirmed funding/x402 Explorer signatures.
