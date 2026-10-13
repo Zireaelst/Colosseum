@@ -13,6 +13,12 @@ function activeLedger(allocation = 1_000_000n) {
     ownerWallet: "wallet-1",
     allocation,
     expiresAt: now + 60_000,
+    mandate: {
+      purpose: "Buy the configured paid research brief",
+      serviceId: "research-api",
+      resourceId: "research-brief",
+      maxAmount: allocation,
+    },
   });
   ledger.createDelegation({
     id: "research-agent",
@@ -33,13 +39,84 @@ afterEach(() => {
 });
 
 describe("Ledger.reservePurchase", () => {
+  test("rejects a resource outside the task mandate without reserving budget", () => {
+    const ledger = activeLedger();
+
+    expect(
+      ledger.reservePurchase({
+        delegationId: "research-agent",
+        purchaseRef: "purchase-wrong-resource",
+        serviceId: "research-api",
+        resourceId: "cloud-credit",
+        amount: 250_000n,
+        now,
+      }),
+    ).toMatchObject({ ok: false, code: "RESOURCE_NOT_ALLOWED" });
+    expect(ledger.availableAmount("research-agent", now)).toBe(1_000_000n);
+  });
+
+  test("rejects an amount above the task per-purchase maximum", () => {
+    const ledger = activeLedger(2_000_000n);
+
+    expect(
+      ledger.reservePurchase({
+        delegationId: "research-agent",
+        purchaseRef: "purchase-over-cap",
+        serviceId: "research-api",
+        resourceId: "research-brief",
+        amount: 2_000_001n,
+        now,
+      }),
+    ).toMatchObject({ ok: false, code: "PURCHASE_LIMIT_EXCEEDED" });
+    expect(ledger.availableAmount("research-agent", now)).toBe(2_000_000n);
+  });
+
+  test("rejects reuse of a purchase reference with changed terms", () => {
+    const ledger = activeLedger();
+    const first = ledger.reservePurchase({
+      delegationId: "research-agent",
+      purchaseRef: "purchase-1",
+      serviceId: "research-api",
+      resourceId: "research-brief",
+      amount: 250_000n,
+      now,
+    });
+
+    const conflict = ledger.reservePurchase({
+      delegationId: "research-agent",
+      purchaseRef: "purchase-1",
+      serviceId: "research-api",
+      resourceId: "research-brief",
+      amount: 500_000n,
+      now: now + 1,
+    });
+
+    expect(first.ok).toBe(true);
+    expect(conflict).toMatchObject({
+      ok: false,
+      paymentRequestId: first.paymentRequestId,
+      replayed: true,
+      code: "IDEMPOTENCY_CONFLICT",
+    });
+    expect(ledger.taskSnapshot("task-1", now + 1).events[0]).toMatchObject({
+      eventType: "payment_rejected",
+      paymentRequestId: first.paymentRequestId,
+      details: {
+        code: "IDEMPOTENCY_CONFLICT",
+        purchaseRef: "purchase-1",
+      },
+    });
+    expect(ledger.availableAmount("research-agent", now + 1)).toBe(750_000n);
+  });
+
   test("atomically reserves an allowed purchase and reduces available budget", () => {
     const ledger = activeLedger();
 
     const result = ledger.reservePurchase({
       delegationId: "research-agent",
-      purchaseKey: "purchase-1",
+      purchaseRef: "purchase-1",
       serviceId: "research-api",
+      resourceId: "research-brief",
       amount: 250_000n,
       now,
     });
@@ -54,21 +131,23 @@ describe("Ledger.reservePurchase", () => {
     expect(ledger.availableAmount("research-agent", now)).toBe(750_000n);
   });
 
-  test("replays the original request for the same purchase key", () => {
+  test("replays the original request for the same purchase reference", () => {
     const ledger = activeLedger();
     const first = ledger.reservePurchase({
       delegationId: "research-agent",
-      purchaseKey: "purchase-1",
+      purchaseRef: "purchase-1",
       serviceId: "research-api",
+      resourceId: "research-brief",
       amount: 250_000n,
       now,
     });
 
     const replay = ledger.reservePurchase({
       delegationId: "research-agent",
-      purchaseKey: "purchase-1",
+      purchaseRef: "purchase-1",
       serviceId: "research-api",
-      amount: 500_000n,
+      resourceId: "research-brief",
+      amount: 250_000n,
       now: now + 1,
     });
 
@@ -91,8 +170,9 @@ describe("Ledger.reservePurchase", () => {
       Promise.resolve().then(() =>
         ledger.reservePurchase({
           delegationId: "research-agent",
-          purchaseKey: "purchase-1",
+          purchaseRef: "purchase-1",
           serviceId: "research-api",
+          resourceId: "research-brief",
           amount: 700_000n,
           now,
         }),
@@ -100,8 +180,9 @@ describe("Ledger.reservePurchase", () => {
       Promise.resolve().then(() =>
         ledger.reservePurchase({
           delegationId: "research-agent",
-          purchaseKey: "purchase-2",
+          purchaseRef: "purchase-2",
           serviceId: "research-api",
+          resourceId: "research-brief",
           amount: 700_000n,
           now,
         }),
@@ -133,8 +214,9 @@ describe("Ledger.reservePurchase", () => {
     expect(
       ledger.reservePurchase({
         delegationId: "research-agent",
-        purchaseKey: "purchase-1",
+        purchaseRef: "purchase-1",
         serviceId: "research-api",
+        resourceId: "research-brief",
         amount: 700_000n,
         now,
       }),
@@ -150,8 +232,9 @@ describe("Ledger.reservePurchase", () => {
     expect(
       ledger.reservePurchase({
         delegationId: "research-agent",
-        purchaseKey: "purchase-1",
+        purchaseRef: "purchase-1",
         serviceId: "analysis-api",
+        resourceId: "research-brief",
         amount: 250_000n,
         now,
       }),
@@ -166,8 +249,9 @@ describe("Ledger.reservePurchase", () => {
     expect(
       ledger.reservePurchase({
         delegationId: "research-agent",
-        purchaseKey: "purchase-after-cancel",
+        purchaseRef: "purchase-after-cancel",
         serviceId: "research-api",
+        resourceId: "research-brief",
         amount: 250_000n,
         now: now + 1,
       }),
@@ -181,8 +265,9 @@ describe("Ledger.reservePurchase", () => {
     expect(
       ledger.reservePurchase({
         delegationId: "research-agent",
-        purchaseKey: "purchase-after-expiry",
+        purchaseRef: "purchase-after-expiry",
         serviceId: "research-api",
+        resourceId: "research-brief",
         amount: 250_000n,
         now: now + 30_000,
       }),
@@ -198,8 +283,9 @@ describe("Ledger.reservePurchase", () => {
     expect(
       ledger.reservePurchase({
         delegationId: "research-agent",
-        purchaseKey: "purchase-zero",
+        purchaseRef: "purchase-zero",
         serviceId: "research-api",
+        resourceId: "research-brief",
         amount: 0n,
         now,
       }),
@@ -234,8 +320,9 @@ describe("Ledger settlement lifecycle", () => {
     const ledger = activeLedger();
     const reserved = ledger.reservePurchase({
       delegationId: "research-agent",
-      purchaseKey: "purchase-1",
+      purchaseRef: "purchase-1",
       serviceId: "research-api",
+      resourceId: "research-brief",
       amount: 250_000n,
       now,
     });
@@ -249,8 +336,9 @@ describe("Ledger settlement lifecycle", () => {
     expect(
       ledger.reservePurchase({
         delegationId: "research-agent",
-        purchaseKey: "purchase-1",
+        purchaseRef: "purchase-1",
         serviceId: "research-api",
+        resourceId: "research-brief",
         amount: 250_000n,
         now: now + 2,
       }),
@@ -267,8 +355,9 @@ describe("Ledger settlement lifecycle", () => {
     const ledger = activeLedger();
     const reserved = ledger.reservePurchase({
       delegationId: "research-agent",
-      purchaseKey: "purchase-1",
+      purchaseRef: "purchase-1",
       serviceId: "research-api",
+      resourceId: "research-brief",
       amount: 900_000n,
       now,
     });
@@ -286,8 +375,9 @@ describe("Ledger settlement lifecycle", () => {
     expect(
       ledger.reservePurchase({
         delegationId: "research-agent",
-        purchaseKey: "purchase-1",
+        purchaseRef: "purchase-1",
         serviceId: "research-api",
+        resourceId: "research-brief",
         amount: 900_000n,
         now: now + 2,
       }),
@@ -302,8 +392,9 @@ describe("Ledger settlement lifecycle", () => {
     expect(
       ledger.reservePurchase({
         delegationId: "research-agent",
-        purchaseKey: "purchase-2",
+        purchaseRef: "purchase-2",
         serviceId: "research-api",
+        resourceId: "research-brief",
         amount: 900_000n,
         now: now + 2,
       }),
@@ -314,8 +405,9 @@ describe("Ledger settlement lifecycle", () => {
     const ledger = activeLedger();
     const reserved = ledger.reservePurchase({
       delegationId: "research-agent",
-      purchaseKey: "purchase-1",
+      purchaseRef: "purchase-1",
       serviceId: "research-api",
+      resourceId: "research-brief",
       amount: 250_000n,
       now,
     });
@@ -340,8 +432,9 @@ describe("Ledger settlement lifecycle", () => {
     expect(
       ledger.reservePurchase({
         delegationId: "research-agent",
-        purchaseKey: "purchase-1",
+        purchaseRef: "purchase-1",
         serviceId: "research-api",
+        resourceId: "research-brief",
         amount: 250_000n,
         now: now + 3,
       }),
@@ -361,8 +454,9 @@ describe("Ledger settlement lifecycle", () => {
     });
     const reserved = ledger.reservePurchase({
       delegationId: "research-child",
-      purchaseKey: "child-purchase",
+      purchaseRef: "child-purchase",
       serviceId: "research-api",
+      resourceId: "research-brief",
       amount: 250_000n,
       now,
     });

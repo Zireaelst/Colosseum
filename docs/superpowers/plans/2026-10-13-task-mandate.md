@@ -31,11 +31,11 @@
 - Rename the public idempotency field to `purchaseRef` and add `resourceId`.
 - Add `RESOURCE_NOT_ALLOWED`, `PURCHASE_LIMIT_EXCEEDED`, and `IDEMPOTENCY_CONFLICT` rejection codes.
 
-- [ ] Add focused failing tests for wrong resource, per-purchase overflow, identical replay, and conflicting replay.
-- [ ] Run `pnpm vitest run src/ledger/ledger.test.ts` and verify the new assertions fail for missing mandate behavior.
-- [ ] Add the `task_mandates` table, migrate `payment_requests.resource_id`, and enforce the checks inside `reservePurchase`.
-- [ ] Return mandate/resource/reference fields from `taskSnapshot`.
-- [ ] Re-run the focused ledger tests and verify they pass.
+- [x] Add focused failing tests for wrong resource, per-purchase overflow, identical replay, and conflicting replay.
+- [x] Run `pnpm vitest run src/ledger/ledger.test.ts` and verify the new assertions fail for missing mandate behavior.
+- [x] Add the `task_mandates` table, migrate `payment_requests.resource_id`, and enforce the checks inside `reservePurchase`.
+- [x] Return mandate/resource/reference fields from `taskSnapshot`.
+- [x] Re-run the focused ledger tests and verify they pass.
 
 ### Task 2: Bind x402 purchase to the configured resource
 
@@ -49,10 +49,10 @@
 - `MerchantService` includes `resourceId: "research-brief"`.
 - `PurchaseInput` includes server-bound `resourceId` and `purchaseRef`.
 
-- [ ] Add a failing purchase-service test proving wrong-resource rejection never calls `pay` or signer loading.
-- [ ] Run the focused test and verify RED.
-- [ ] Pass the configured resource into atomic reservation and initialize the task mandate from validated creation input.
-- [ ] Run purchase/runtime tests and verify GREEN.
+- [x] Add a failing purchase-service test proving wrong-resource rejection never calls `pay` or signer loading.
+- [x] Run the focused test and verify RED.
+- [x] Pass the configured resource into atomic reservation and initialize the task mandate from validated creation input.
+- [x] Run purchase/runtime tests and verify GREEN.
 
 ### Task 3: Task creation API and simple dashboard
 
@@ -72,11 +72,11 @@
 - `taskMandateSchema` accepts purpose, literal service/resource IDs, decimal base-unit cap, and duration minutes.
 - The dashboard renders the persisted mandate and payment reference.
 
-- [ ] Add failing schema/view-model tests for safe inputs and display fields.
-- [ ] Run focused tests and verify RED.
-- [ ] Validate task creation input, send safe UI defaults, and expose the stored mandate in snapshots.
-- [ ] Replace client-generated `purchaseKey` with explicit `purchaseRef` while keeping identity and resource server-owned.
-- [ ] Run focused tests and verify GREEN.
+- [x] Add failing schema/view-model tests for safe inputs and display fields.
+- [x] Run focused tests and verify RED.
+- [x] Validate task creation input, send safe UI defaults, and expose the stored mandate in snapshots.
+- [x] Replace client-generated `purchaseKey` with explicit `purchaseRef` while keeping identity and resource server-owned.
+- [x] Run focused tests and verify GREEN.
 
 ### Task 4: Documentation and repository gates
 
@@ -86,7 +86,7 @@
 - Modify: `docs/roadmap.md`
 - Modify: `README.md`
 
-- [ ] Document the mandate enforcement path and backend-only trust boundary.
-- [ ] Run `pnpm test`, `pnpm typecheck`, `pnpm build`, and `git diff --check`.
-- [ ] Scan tracked files for secret assignments and prohibited former product names.
-- [ ] Commit the tested feature without pushing or deploying.
+- [x] Document the mandate enforcement path and backend-only trust boundary.
+- [x] Run `pnpm test`, `pnpm typecheck`, `pnpm build`, and `git diff --check`.
+- [x] Scan tracked files for secret assignments and prohibited former product names.
+- [x] Commit the tested feature without pushing or deploying.

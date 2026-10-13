@@ -6,7 +6,18 @@ The Solana transaction proves the token transfer. Budget, service, expiry, cance
 
 ## Current status
 
-M0/M1 are complete. The M2–M5 code path is implemented: wallet proof, disposable task account, 10 test-USDC funding transaction, 4/3 specialist delegations, fixed x402 merchant, guarded purchase service, Jev routing, Agents SDK manager/specialists, and backend-driven dashboard. `/app` also includes a deterministic public walkthrough that works without a wallet or server state and labels every result `SIMULATED`. The automated suite, typecheck, and production build are the release gates. A local merchant smoke test returned a real package-generated V2 `exact` challenge. No devnet transfer or x402 settlement has been broadcast yet, so onchain acceptance remains pending devnet configuration and an explicit wallet approval.
+M0/M1 are complete. The M2–M5 code path is implemented: wallet proof,
+disposable task account, structured task mandate, 10 test-USDC funding
+transaction, 4/3 specialist delegations, fixed x402 merchant, guarded purchase
+service, Jev routing, Agents SDK manager/specialists, and backend-driven
+dashboard. The mandate binds a human purpose, configured service/resource,
+per-purchase limit, expiry, and explicit idempotent `purchaseRef` before signing.
+`/app` also includes a deterministic public walkthrough that works without a
+wallet or server state and labels every result `SIMULATED`. The automated suite,
+typecheck, and production build are the release gates. A local merchant smoke
+test returned a real package-generated V2 `exact` challenge. No devnet transfer
+or x402 settlement has been broadcast yet, so onchain acceptance remains
+pending devnet configuration and an explicit wallet approval.
 
 See [docs/feasibility.md](docs/feasibility.md), [docs/architecture.md](docs/architecture.md), [docs/security.md](docs/security.md), [docs/roadmap.md](docs/roadmap.md), and the [Turkish submission package](docs/submission-tr.md).
 
@@ -81,7 +92,11 @@ The marketing landing page is served at `/`; the public walkthrough and live-dev
 
 `/app` defaults to **Public Demo**, a browser-only deterministic walkthrough of the 10/4/3 delegation, allowed purchase, budget rejection, cancellation, and post-cancellation rejection. It creates no signature or transfer. **Live Devnet** preserves the wallet-backed local flow, which still requires one long-running Node process, SQLite, and the separate merchant service.
 
-Run `pnpm merchant` beside `pnpm dev` after configuring the devnet facilitator and merchant owner. Connect a Wallet Standard Solana wallet, sign the nonce, create the task, and inspect the exact funding preview before approving the devnet transaction. The paid action stays unavailable until funding is confirmed.
+Run `pnpm merchant` beside `pnpm dev` after configuring the devnet facilitator
+and merchant owner. Connect a Wallet Standard Solana wallet, sign the nonce,
+enter the task purpose, and create the fixed paid-research mandate. Inspect the
+exact funding preview before approving the devnet transaction. The paid action
+stays unavailable until funding is confirmed.
 
 ## Limitations
 

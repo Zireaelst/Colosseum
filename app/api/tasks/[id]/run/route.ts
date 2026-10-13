@@ -11,11 +11,15 @@ import { PurchaseService } from "../../../../../src/payments/purchase-service";
 import { X402FetchTransport } from "../../../../../src/payments/x402-fetch-transport";
 import { ledger } from "../../../../../src/runtime/store";
 import { runtimeIds } from "../../../../../src/runtime/task-runtime";
+import {
+  TASK_RESOURCE_ID,
+  TASK_SERVICE_ID,
+} from "../../../../../src/runtime/task-mandate";
 
 const bodySchema = z.object({
   prompt: z.string().min(1).max(2_000),
-  purchaseKey: z.string().min(1).max(100),
-});
+  purchaseRef: z.string().min(1).max(100),
+}).strict();
 
 export async function POST(
   request: NextRequest,
@@ -42,7 +46,8 @@ export async function POST(
     ? new PurchaseService({
         ledger,
         merchant: {
-          serviceId: "research-api",
+          serviceId: TASK_SERVICE_ID,
+          resourceId: TASK_RESOURCE_ID,
           url:
             process.env.X402_MERCHANT_URL ??
             "http://127.0.0.1:4021/research",
@@ -65,8 +70,9 @@ export async function POST(
       return purchaseService.purchase({
         taskId: id,
         delegationId: runtimeIds(id).research,
-        purchaseKey: body.data.purchaseKey,
-        serviceId: "research-api",
+        purchaseRef: body.data.purchaseRef,
+        serviceId: TASK_SERVICE_ID,
+        resourceId: TASK_RESOURCE_ID,
       });
     },
   });

@@ -33,6 +33,7 @@ export async function GET(
         merchantPreview: process.env.X402_MERCHANT_PAY_TO
           ? {
               serviceId: "research-api",
+              resourceId: "research-brief",
               amount: "1000",
               mint: task.mint,
               payTo: process.env.X402_MERCHANT_PAY_TO,

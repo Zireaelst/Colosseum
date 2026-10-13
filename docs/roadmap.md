@@ -25,6 +25,12 @@ Acceptance:
 
 Evidence: 39 tests cover delegation, payment-term validation, atomic reservation, idempotency, competing requests, cancellation/expiry, active child allocations, failed/pending/confirmed settlement, signature persistence, and descendant spend after child expiry. `pnpm test` and `pnpm typecheck` pass.
 
+An approved structured task-mandate extension is now implemented. Each task
+stores its purpose, configured `research-api / research-brief` identity,
+per-purchase base-unit maximum, and expiry. Atomic reservation rejects a wrong
+resource, per-purchase overflow, or conflicting reuse of a `purchaseRef` before
+signer loading/payment. The model-facing purchase tool has no arguments.
+
 ## M2 — task account and real devnet transfer (`implemented; live transfer pending`)
 
 Acceptance:
@@ -72,7 +78,13 @@ Acceptance:
 - Manager delegates 4 and 3 USDC without exceeding the 10 USDC parent allocation.
 - Cancellation blocks a later purchase.
 
-The authenticated task snapshot renders the 10/4/3 allocation tree, available amounts, service scopes, states, events, rejections, payment preview, Explorer links, and boolean runtime readiness. Cancellation is a server action and new demo runs use distinct purchase keys. The public deployment now defaults to a deterministic browser-only walkthrough of allowed, over-budget, cancelled, and post-cancellation decisions; every result is explicitly labeled simulated.
+The authenticated task snapshot renders the structured mandate, 10/4/3
+allocation tree, available amounts, service scopes, states, events, rejection
+reasons, purchase references, payment preview, Explorer links, and boolean
+runtime readiness. Cancellation is a server action and new demo runs use
+distinct purchase references. The public deployment now defaults to a
+deterministic browser-only walkthrough of allowed, over-budget, cancelled, and
+post-cancellation decisions; every result is explicitly labeled simulated.
 
 ## M6 — verification and demo handoff (`in progress`)
 

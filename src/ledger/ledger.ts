@@ -10,6 +10,12 @@ export interface CreateTaskInput {
   ownerWallet: string;
   allocation: bigint;
   expiresAt: number;
+  mandate: {
+    purpose: string;
+    serviceId: string;
+    resourceId: string;
+    maxAmount: bigint;
+  };
 }
 
 export interface CreateDelegationInput {
@@ -24,8 +30,9 @@ export interface CreateDelegationInput {
 
 export interface ReservePurchaseInput {
   delegationId: string;
-  purchaseKey: string;
+  purchaseRef: string;
   serviceId: string;
+  resourceId: string;
   amount: bigint;
   now: number;
 }
@@ -42,6 +49,9 @@ export interface ReservedPurchase {
 export type ReservationRejectionCode =
   | "BUDGET_EXCEEDED"
   | "SERVICE_NOT_ALLOWED"
+  | "RESOURCE_NOT_ALLOWED"
+  | "PURCHASE_LIMIT_EXCEEDED"
+  | "IDEMPOTENCY_CONFLICT"
   | "AUTHORITY_CANCELLED"
   | "AUTHORITY_EXPIRED"
   | "INVALID_AMOUNT"
@@ -79,6 +89,12 @@ export interface TaskSnapshot {
     allocation: bigint;
     status: "active" | "cancelled";
     expiresAt: number;
+    mandate: {
+      purpose: string;
+      serviceId: string;
+      resourceId: string;
+      maxAmount: bigint;
+    };
   };
   delegations: Array<{
     id: string;
@@ -92,8 +108,9 @@ export interface TaskSnapshot {
   payments: Array<{
     id: string;
     delegationId: string;
-    purchaseKey: string;
+    purchaseRef: string;
     serviceId: string;
+    resourceId: string;
     amount: bigint;
     state: PaymentRequestRecord["state"];
     rejectionCode: string | null;
@@ -115,6 +132,8 @@ interface AvailableRow {
 
 interface ExistingPaymentRow {
   id: string;
+  service_id: string;
+  resource_id: string;
   amount_units: bigint;
   state:
     | "reserved"
@@ -147,6 +166,21 @@ interface PaymentRequestRow {
   transaction_signature: string | null;
 }
 
+interface MandateRow {
+  purpose: string;
+  service_id: string;
+  resource_id: string;
+  max_amount_units: bigint;
+}
+
+function purchaseReference(input: ReservePurchaseInput): string {
+  return input.purchaseRef;
+}
+
+function purchaseResource(input: ReservePurchaseInput): string {
+  return input.resourceId;
+}
+
 const schema = `
   CREATE TABLE IF NOT EXISTS tasks (
     id TEXT PRIMARY KEY,
@@ -154,6 +188,14 @@ const schema = `
     allocation_units INTEGER NOT NULL CHECK (allocation_units > 0),
     expires_at_ms INTEGER NOT NULL,
     status TEXT NOT NULL CHECK (status IN ('active', 'cancelled'))
+  );
+
+  CREATE TABLE IF NOT EXISTS task_mandates (
+    task_id TEXT PRIMARY KEY REFERENCES tasks(id),
+    purpose TEXT NOT NULL,
+    service_id TEXT NOT NULL,
+    resource_id TEXT NOT NULL,
+    max_amount_units INTEGER NOT NULL CHECK (max_amount_units > 0)
   );
 
   CREATE TABLE IF NOT EXISTS delegations (
@@ -176,6 +218,7 @@ const schema = `
     delegation_id TEXT NOT NULL REFERENCES delegations(id),
     purchase_key TEXT NOT NULL,
     service_id TEXT NOT NULL,
+    resource_id TEXT NOT NULL,
     amount_units INTEGER NOT NULL,
     state TEXT NOT NULL CHECK (
       state IN ('reserved', 'settlement_pending', 'settled', 'failed', 'rejected')
@@ -241,6 +284,19 @@ export class Ledger {
         "ALTER TABLE payment_requests ADD COLUMN pending_transaction_signature TEXT",
       );
     }
+    if (!columns.some((column) => column.name === "resource_id")) {
+      this.database.exec(
+        "ALTER TABLE payment_requests ADD COLUMN resource_id TEXT NOT NULL DEFAULT 'research-brief'",
+      );
+    }
+    this.database.exec(
+      `INSERT OR IGNORE INTO task_mandates (
+        task_id, purpose, service_id, resource_id, max_amount_units
+      )
+      SELECT id, 'Legacy paid research task', 'research-api',
+        'research-brief', allocation_units
+      FROM tasks`,
+    );
     this.database.exec(
       `CREATE UNIQUE INDEX IF NOT EXISTS payment_requests_pending_signature
        ON payment_requests(pending_transaction_signature)
@@ -261,13 +317,26 @@ export class Ledger {
   }
 
   createTask(input: CreateTaskInput): void {
-    this.database
-      .prepare(
+    const create = this.database.transaction(() => {
+      this.database.prepare(
         `INSERT INTO tasks (
           id, owner_wallet, allocation_units, expires_at_ms, status
         ) VALUES (?, ?, ?, ?, 'active')`,
       )
       .run(input.id, input.ownerWallet, input.allocation, input.expiresAt);
+      this.database.prepare(
+        `INSERT INTO task_mandates (
+          task_id, purpose, service_id, resource_id, max_amount_units
+        ) VALUES (?, ?, ?, ?, ?)`,
+      ).run(
+        input.id,
+        input.mandate.purpose,
+        input.mandate.serviceId,
+        input.mandate.resourceId,
+        input.mandate.maxAmount,
+      );
+    });
+    create.immediate();
   }
 
   createDelegation(input: CreateDelegationInput): void {
@@ -583,6 +652,11 @@ export class Ledger {
         }
       | undefined;
     if (!task) throw new Error(`Unknown task '${taskId}'`);
+    const mandate = this.database.prepare(
+      `SELECT purpose, service_id, resource_id, max_amount_units
+       FROM task_mandates WHERE task_id = ?`,
+    ).get(taskId) as MandateRow | undefined;
+    if (!mandate) throw new Error(`Task '${taskId}' has no mandate`);
 
     const delegationRows = this.database
       .prepare(
@@ -603,6 +677,7 @@ export class Ledger {
     const payments = this.database
       .prepare(
         `SELECT p.id, p.delegation_id, p.purchase_key, p.service_id,
+          p.resource_id,
           p.amount_units, p.state, p.rejection_code,
           COALESCE(s.transaction_signature, p.pending_transaction_signature)
             AS transaction_signature
@@ -616,6 +691,7 @@ export class Ledger {
       delegation_id: string;
       purchase_key: string;
       service_id: string;
+      resource_id: string;
       amount_units: bigint;
       state: PaymentRequestRecord["state"];
       rejection_code: string | null;
@@ -643,6 +719,12 @@ export class Ledger {
         allocation: task.allocation_units,
         status: task.status,
         expiresAt: Number(task.expires_at_ms),
+        mandate: {
+          purpose: mandate.purpose,
+          serviceId: mandate.service_id,
+          resourceId: mandate.resource_id,
+          maxAmount: mandate.max_amount_units,
+        },
       },
       delegations: delegationRows.map((row) => ({
         id: row.id,
@@ -658,8 +740,9 @@ export class Ledger {
       payments: payments.map((row) => ({
         id: row.id,
         delegationId: row.delegation_id,
-        purchaseKey: row.purchase_key,
+        purchaseRef: row.purchase_key,
         serviceId: row.service_id,
+        resourceId: row.resource_id,
         amount: row.amount_units,
         state: row.state,
         rejectionCode: row.rejection_code,
@@ -731,15 +814,16 @@ export class Ledger {
     this.database
       .prepare(
         `INSERT INTO payment_requests (
-          id, delegation_id, purchase_key, service_id, amount_units,
+          id, delegation_id, purchase_key, service_id, resource_id, amount_units,
           state, rejection_code, created_at_ms, updated_at_ms
-        ) VALUES (?, ?, ?, ?, ?, 'rejected', ?, ?, ?)`,
+        ) VALUES (?, ?, ?, ?, ?, ?, 'rejected', ?, ?, ?)`,
       )
       .run(
         paymentRequestId,
         input.delegationId,
-        input.purchaseKey,
+        purchaseReference(input),
         input.serviceId,
+        purchaseResource(input),
         input.amount,
         code,
         input.now,
@@ -775,13 +859,14 @@ export class Ledger {
 
   reservePurchase(input: ReservePurchaseInput): ReservePurchaseResult {
     const reserve = this.database.transaction((): ReservePurchaseResult => {
+      const purchaseRef = purchaseReference(input);
       const existing = this.database
         .prepare(
-          `SELECT id, amount_units, state, rejection_code
+          `SELECT id, service_id, resource_id, amount_units, state, rejection_code
            FROM payment_requests
            WHERE delegation_id = ? AND purchase_key = ?`,
         )
-        .get(input.delegationId, input.purchaseKey) as
+        .get(input.delegationId, purchaseRef) as
         | ExistingPaymentRow
         | undefined;
 
@@ -790,6 +875,37 @@ export class Ledger {
           input.delegationId,
           input.now,
         );
+        if (
+          existing.service_id !== input.serviceId ||
+          existing.resource_id !== purchaseResource(input) ||
+          existing.amount_units !== input.amount
+        ) {
+          this.database.prepare(
+            `INSERT INTO events (
+              task_id, delegation_id, payment_request_id, event_type,
+              details_json, created_at_ms
+            )
+            SELECT task_id, id, ?, 'payment_rejected', ?, ?
+            FROM delegations WHERE id = ?`,
+          ).run(
+            existing.id,
+            JSON.stringify({
+              code: "IDEMPOTENCY_CONFLICT",
+              purchaseRef,
+            }),
+            input.now,
+            input.delegationId,
+          );
+          return {
+            ok: false,
+            paymentRequestId: existing.id,
+            replayed: true,
+            state: "rejected",
+            code: "IDEMPOTENCY_CONFLICT",
+            amount: input.amount,
+            availableAfter,
+          };
+        }
         if (existing.state === "rejected" || existing.state === "failed") {
           return {
             ok: false,
@@ -866,6 +982,37 @@ export class Ledger {
         );
       }
 
+      const mandate = this.database.prepare(
+        `SELECT m.purpose, m.service_id, m.resource_id, m.max_amount_units
+         FROM task_mandates m
+         JOIN delegations d ON d.task_id = m.task_id
+         WHERE d.id = ?`,
+      ).get(input.delegationId) as MandateRow | undefined;
+      if (!mandate || mandate.service_id !== input.serviceId) {
+        return this.recordRejection(
+          input,
+          paymentRequestId,
+          "SERVICE_NOT_ALLOWED",
+          availableBefore,
+        );
+      }
+      if (mandate.resource_id !== purchaseResource(input)) {
+        return this.recordRejection(
+          input,
+          paymentRequestId,
+          "RESOURCE_NOT_ALLOWED",
+          availableBefore,
+        );
+      }
+      if (input.amount > mandate.max_amount_units) {
+        return this.recordRejection(
+          input,
+          paymentRequestId,
+          "PURCHASE_LIMIT_EXCEEDED",
+          availableBefore,
+        );
+      }
+
       if (input.amount > availableBefore) {
         return this.recordRejection(
           input,
@@ -878,15 +1025,16 @@ export class Ledger {
       this.database
         .prepare(
           `INSERT INTO payment_requests (
-            id, delegation_id, purchase_key, service_id, amount_units,
+            id, delegation_id, purchase_key, service_id, resource_id, amount_units,
             state, created_at_ms, updated_at_ms
-          ) VALUES (?, ?, ?, ?, ?, 'reserved', ?, ?)`,
+          ) VALUES (?, ?, ?, ?, ?, ?, 'reserved', ?, ?)`,
         )
         .run(
           paymentRequestId,
           input.delegationId,
-          input.purchaseKey,
+          purchaseRef,
           input.serviceId,
+          purchaseResource(input),
           input.amount,
           input.now,
           input.now,
@@ -920,8 +1068,9 @@ export class Ledger {
           paymentRequestId,
           JSON.stringify({
             amount: input.amount.toString(),
-            purchaseKey: input.purchaseKey,
+            purchaseRef,
             serviceId: input.serviceId,
+            resourceId: purchaseResource(input),
           }),
           input.now,
           input.delegationId,

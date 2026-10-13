@@ -26,7 +26,7 @@ interface TaskDashboardProps {
   ownerWallet: string;
   snapshot: TaskSnapshotDto & {
     readiness: { ai: boolean; jev: boolean; merchant: boolean; rpc: boolean };
-    merchantPreview: null | { serviceId: string; amount: string; mint: string; payTo: string };
+    merchantPreview: null | { serviceId: string; resourceId: string; amount: string; mint: string; payTo: string };
   };
   fundingState: "idle" | "signing" | "confirming" | "confirmed";
   fundingSignature: string | null;
@@ -69,6 +69,9 @@ export function TaskDashboard(props: TaskDashboardProps) {
         <article className="card task-card">
           <h3>Funding preview</h3>
           <dl>
+            <div><dt>Task purpose</dt><dd>{view.mandate.purpose}</dd></div>
+            <div><dt>Allowed product</dt><dd><code>{view.mandate.serviceId} / {view.mandate.resourceId}</code></dd></div>
+            <div><dt>Per purchase</dt><dd>up to {view.mandate.maxAmount} test USDC</dd></div>
             <div><dt>Network</dt><dd>Solana devnet</dd></div>
             <div><dt>Budget</dt><dd>10 test USDC</dd></div>
             <div><dt>Wallet payer</dt><dd><code>{props.ownerWallet}</code></dd></div>
@@ -148,6 +151,7 @@ export function TaskDashboard(props: TaskDashboardProps) {
             <div className="payment-preview">
               <span className="status-pill warning">next x402 exact</span>
               <strong>{props.snapshot.merchantPreview.amount} base units</strong>
+              <code>{props.snapshot.merchantPreview.serviceId} / {props.snapshot.merchantPreview.resourceId}</code>
               <code>{props.snapshot.merchantPreview.mint} → {props.snapshot.merchantPreview.payTo}</code>
             </div>
           ) : <p className="empty">Merchant is not configured yet.</p>}
@@ -155,8 +159,8 @@ export function TaskDashboard(props: TaskDashboardProps) {
             <div className="activity-row" key={payment.id}>
               <i className={payment.tone} />
               <div>
-                <strong>{payment.serviceId} · {payment.amount} test USDC</strong>
-                <small>{payment.label}</small>
+                <strong>{payment.serviceId} / {payment.resourceId} · {payment.amount} test USDC</strong>
+                <small>{payment.label} · ref {payment.purchaseRef}</small>
                 {payment.explorerUrl ? <a href={payment.explorerUrl} rel="noreferrer" target="_blank">Explorer ↗</a> : null}
               </div>
             </div>

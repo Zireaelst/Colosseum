@@ -52,15 +52,15 @@ function dependencies(
 export function buildPactletAgentGraph(input: {
   model: Model;
   routing: RoutingDecision & { route: "research" | "analysis" };
-  purchase(purchaseKey: string): Promise<PurchaseResult>;
+  purchase(): Promise<PurchaseResult>;
 }) {
   const purchaseResearch = tool({
     name: "purchase_research",
     description:
       "Purchase the one allowlisted pactlet research service. Runtime policy supplies identity, endpoint, service, amount, and signer.",
-    parameters: z.object({ purchaseKey: z.string().min(1).max(100) }),
-    execute: async ({ purchaseKey }) =>
-      JSON.stringify(await input.purchase(purchaseKey), (_key, value) =>
+    parameters: z.object({}).strict(),
+    execute: async () =>
+      JSON.stringify(await input.purchase(), (_key, value) =>
         typeof value === "bigint" ? value.toString() : value,
       ),
   });
@@ -96,7 +96,7 @@ export function buildPactletAgentGraph(input: {
 export async function runPactletManager(
   input: {
     prompt: string;
-    purchase(purchaseKey: string): Promise<PurchaseResult>;
+    purchase(): Promise<PurchaseResult>;
   },
   overrides: Partial<OrchestratorDependencies> = {},
 ): Promise<ManagerRunResult> {

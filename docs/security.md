@@ -29,11 +29,21 @@ Delegation validation enforces a subset service list, no budget above available 
 
 ### SSRF, redirect and merchant substitution
 
-Purchase input uses configured service IDs, not URLs. The HTTP client uses fixed origins, blocks redirects, and matches the x402 resource, network, mint, recipient, amount, and scheme before signing.
+Purchase input uses a configured service/resource pair, not URLs. The model's
+purchase tool has no arguments; identity, reference, service, resource, amount,
+endpoint, and signer come from server runtime context. The HTTP client uses fixed
+origins, blocks redirects, and matches the x402 resource URL, network, mint,
+recipient, amount, and scheme before signing. SQLite also checks the stored task
+mandate and per-purchase maximum inside the reservation transaction.
 
 ### Replay and duplicate payment
 
-A task-scoped purchase key is unique. Legitimate retries return the existing state/result. The SVM facilitator's duplicate-settlement protection complements, but does not replace, the application ledger.
+A task-scoped purchase reference is unique. Legitimate retries with identical
+terms return the existing state/result. Reusing a reference with a different
+service, resource, or amount returns `IDEMPOTENCY_CONFLICT` and records a policy
+event without creating another transfer. The SVM facilitator's
+duplicate-settlement protection complements, but does not replace, the
+application ledger.
 
 Wallet challenges no longer depend on a process-local nonce map. Their complete
 claims are authenticated with a server-only HMAC and expire after five minutes;
@@ -85,4 +95,8 @@ backend policy into onchain enforcement.
 
 ## Required negative tests
 
-Unauthorized merchant, wrong mint, wrong network, wrong recipient, amount above remaining budget, expired authority, canceled authority, duplicate purchase key, simultaneous overspend, definite failure, and indeterminate settlement must all have explicit tests.
+Unauthorized merchant, wrong resource, wrong mint, wrong network, wrong
+recipient, amount above the per-purchase or remaining-budget limit, expired
+authority, canceled authority, duplicate/conflicting purchase reference,
+simultaneous overspend, definite failure, and indeterminate settlement must all
+have explicit tests.

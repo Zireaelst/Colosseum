@@ -1,4 +1,12 @@
 export interface TaskSnapshotDto {
+  task: {
+    mandate: {
+      purpose: string;
+      serviceId: string;
+      resourceId: string;
+      maxAmount: string;
+    };
+  };
   delegations: Array<{
     id: string;
     parentId: string | null;
@@ -9,7 +17,9 @@ export interface TaskSnapshotDto {
   }>;
   payments: Array<{
     id: string;
+    purchaseRef: string;
     serviceId: string;
+    resourceId: string;
     amount: string;
     state: string;
     rejectionCode: string | null;
@@ -27,6 +37,10 @@ export function unitsToToken(value: string): string {
 
 export function toTaskViewModel(snapshot: TaskSnapshotDto) {
   return {
+    mandate: {
+      ...snapshot.task.mandate,
+      maxAmount: unitsToToken(snapshot.task.mandate.maxAmount),
+    },
     delegations: snapshot.delegations.map((delegation) => ({
       ...delegation,
       name: delegation.id.split(":").at(-1) ?? delegation.id,

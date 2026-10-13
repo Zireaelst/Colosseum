@@ -20,9 +20,12 @@ The backend is trusted. It owns the SQLite ledger, agent runtime context, per-ta
 Persist these concepts separately:
 
 - `tasks`: user wallet, task payment account, mint, allocation, status, expiry.
+- `task_mandates`: user-visible purpose, configured service/resource identity,
+  and maximum base-unit amount per purchase.
 - `delegations`: parent, child runtime identity, allocation, expiry, status.
 - `delegation_services`: configured service IDs allowed for a delegation.
-- `payment_requests`: purchase key, agent runtime identity, merchant challenge, requested base units.
+- `payment_requests`: purchase reference, resource, agent runtime identity,
+  merchant challenge, and requested base units.
 - `reservations`: atomic hold against one delegation while settlement is unresolved.
 - `settlements`: x402 status, transaction signature, network, mint, recipient, confirmed base units.
 - `events`: ordered, display-safe facts for the dashboard.
@@ -35,8 +38,11 @@ The availability check and reservation write happen in one immediate SQLite tran
 
 ## Payment data flow
 
-1. The agent calls `purchase` with a configured service ID and idempotency key. It cannot submit a URL or signer.
-2. The server loads agent identity and delegation from runtime context, then rejects cancellation, expiry, or service mismatch.
+1. The research tool calls a parameterless server-bound `purchase` capability.
+   It cannot submit a URL, service, resource, amount, purchase reference, or signer.
+2. The server loads agent identity, purchase reference, task mandate, and
+   delegation from runtime context, then rejects cancellation, expiry, service,
+   resource, or per-purchase-limit mismatch.
 3. The server calls the exact allowlisted endpoint without following redirects and receives `PAYMENT-REQUIRED`.
 4. x402 libraries decode the challenge. pactlet additionally matches V2, `exact`, devnet CAIP-2, devnet USDC mint, configured `payTo`, maximum amount, and resource identity.
 5. One SQLite transaction creates or reuses the purchase request and reserves available budget.
@@ -55,7 +61,7 @@ Wallet Standard is used in the browser. The server issues a short-lived, origin-
 | Mint, destination and exact amount in payment | x402 SVM verification and Solana transaction |
 | Transaction confirmed | Solana devnet RPC and Explorer signature |
 | Hierarchical budget and child allocation | Trusted pactlet backend + SQLite transaction |
-| Service allowlist, expiry and cancellation | Trusted pactlet backend |
+| Task purpose, service/resource allowlist, per-purchase limit, expiry and cancellation | Trusted pactlet backend |
 | Agent identity | Trusted server runtime context |
 | Idempotent purchase outcome | SQLite unique constraints + reconciliation |
 

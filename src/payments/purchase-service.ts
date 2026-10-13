@@ -14,6 +14,7 @@ import {
 
 export interface MerchantService {
   serviceId: string;
+  resourceId: string;
   url: string;
   payTo: string;
 }
@@ -32,8 +33,9 @@ export interface PaymentTransport {
 export interface PurchaseInput {
   taskId: string;
   delegationId: string;
-  purchaseKey: string;
+  purchaseRef: string;
   serviceId: string;
+  resourceId: string;
   now?: number;
 }
 
@@ -71,6 +73,13 @@ export class PurchaseService {
       return {
         ok: false,
         code: "SERVICE_NOT_CONFIGURED",
+        state: "rejected",
+      };
+    }
+    if (input.resourceId !== merchant.resourceId) {
+      return {
+        ok: false,
+        code: "RESOURCE_NOT_CONFIGURED",
         state: "rejected",
       };
     }
@@ -136,8 +145,9 @@ export class PurchaseService {
 
     const reservation = ledger.reservePurchase({
       delegationId: input.delegationId,
-      purchaseKey: input.purchaseKey,
+      purchaseRef: input.purchaseRef,
       serviceId: input.serviceId,
+      resourceId: input.resourceId,
       amount: BigInt(selected.amount),
       now,
     });

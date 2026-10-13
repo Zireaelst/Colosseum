@@ -19,13 +19,29 @@ describe("initializeTaskAuthority", () => {
       taskId: "task-1",
       ownerWallet: "owner",
       now,
+      mandate: {
+        purpose: "Compare a paid research source",
+        serviceId: "research-api",
+        resourceId: "research-brief",
+        maxAmount: 1_000n,
+        durationMinutes: 30,
+      },
     });
 
     expect(ledger.availableAmount(ids.manager, now)).toBe(3_000_000n);
     expect(ledger.availableAmount(ids.research, now)).toBe(4_000_000n);
     expect(ledger.availableAmount(ids.analysis, now)).toBe(3_000_000n);
     expect(ledger.taskSnapshot("task-1", now)).toMatchObject({
-      task: { allocation: 10_000_000n },
+      task: {
+        allocation: 10_000_000n,
+        expiresAt: now + 30 * 60_000,
+        mandate: {
+          purpose: "Compare a paid research source",
+          serviceId: "research-api",
+          resourceId: "research-brief",
+          maxAmount: 1_000n,
+        },
+      },
       delegations: expect.arrayContaining([
         expect.objectContaining({ id: ids.research, available: 4_000_000n }),
         expect.objectContaining({ id: ids.analysis, available: 3_000_000n }),

@@ -114,6 +114,9 @@ export function WalletConnect() {
   const wallets = useWallets();
   const [connectedAccount, setConnectedAccount] =
     useState<UiWalletAccount | null>(null);
+  const [taskPurpose, setTaskPurpose] = useState(
+    "Research the paid demo source and summarize the finding.",
+  );
   const [task, setTask] = useState<{
     id: string;
     paymentAddress: string;
@@ -130,6 +133,7 @@ export function WalletConnect() {
     readiness: { ai: boolean; jev: boolean; merchant: boolean; rpc: boolean };
     merchantPreview: null | {
       serviceId: string;
+      resourceId: string;
       amount: string;
       mint: string;
       payTo: string;
@@ -145,7 +149,17 @@ export function WalletConnect() {
 
   async function createTask() {
     setTaskError(null);
-    const response = await fetch("/api/tasks", { method: "POST" });
+    const response = await fetch("/api/tasks", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        purpose: taskPurpose,
+        serviceId: "research-api",
+        resourceId: "research-brief",
+        maxAmountBaseUnits: "1000",
+        durationMinutes: 45,
+      }),
+    });
     if (!response.ok) {
       setTaskError("Could not create the disposable task account");
       return;
@@ -216,7 +230,7 @@ export function WalletConnect() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           prompt,
-          purchaseKey: `demo-${crypto.randomUUID()}`,
+          purchaseRef: `purchase-${crypto.randomUUID()}`,
         }),
       });
       const result = await response.json();
@@ -245,7 +259,18 @@ export function WalletConnect() {
         <strong>Wallet ownership verified</strong>
         <code>{connectedAccount.address}</code>
         {!task ? (
-          <button onClick={createTask} type="button">Create 10 test-USDC task</button>
+          <div className="task-setup">
+            <label htmlFor="task-purpose">What should this task accomplish?</label>
+            <textarea
+              id="task-purpose"
+              maxLength={240}
+              onChange={(event) => setTaskPurpose(event.target.value)}
+              rows={3}
+              value={taskPurpose}
+            />
+            <small>Allowed product: paid research brief · max 0.001 test USDC per purchase · expires in 45 minutes.</small>
+            <button disabled={taskPurpose.trim().length < 3} onClick={createTask} type="button">Create 10 test-USDC task</button>
+          </div>
         ) : null}
         {task && snapshot ? <TaskDashboard
           actionPending={actionPending}

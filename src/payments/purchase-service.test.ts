@@ -14,6 +14,7 @@ import {
 const now = Date.UTC(2026, 9, 13, 6, 0, 0);
 const merchant = {
   serviceId: "research-api",
+  resourceId: "research-brief",
   url: "http://127.0.0.1:4021/research",
   payTo: "merchant-owner",
 } as const;
@@ -69,6 +70,12 @@ function fixture(
     ownerWallet: "owner",
     allocation: 10_000_000n,
     expiresAt: now + 60_000,
+    mandate: {
+      purpose: "Buy the configured paid research brief",
+      serviceId: merchant.serviceId,
+      resourceId: merchant.resourceId,
+      maxAmount: 1_000n,
+    },
   });
   ledger.createDelegation({
     id: "research-agent",
@@ -102,14 +109,33 @@ afterEach(() => {
 });
 
 describe("PurchaseService", () => {
+  test("rejects the wrong resource before loading a signer or paying", async () => {
+    const signerForTask = vi.fn(() => ({ address: "task-signer" }) as never);
+    const { service, transport } = fixture(challenge(), signerForTask);
+
+    const result = await service.purchase({
+      taskId: "task-1",
+      delegationId: "research-agent",
+      purchaseRef: "wrong-resource",
+      serviceId: merchant.serviceId,
+      resourceId: "cloud-credit",
+      now,
+    });
+
+    expect(result).toMatchObject({ ok: false, code: "RESOURCE_NOT_CONFIGURED" });
+    expect(signerForTask).not.toHaveBeenCalled();
+    expect(transport.pay).not.toHaveBeenCalled();
+  });
+
   test("validates, reserves, signs and stores a successful x402 settlement", async () => {
     const { ledger, service, transport } = fixture();
 
     const result = await service.purchase({
       taskId: "task-1",
       delegationId: "research-agent",
-      purchaseKey: "purchase-1",
+      purchaseRef: "purchase-1",
       serviceId: merchant.serviceId,
+      resourceId: merchant.resourceId,
       now,
     });
 
@@ -133,8 +159,9 @@ describe("PurchaseService", () => {
     await service.purchase({
       taskId: "task-1",
       delegationId: "research-agent",
-      purchaseKey: "async-signer",
+      purchaseRef: "async-signer",
       serviceId: merchant.serviceId,
+      resourceId: merchant.resourceId,
       now,
     });
 
@@ -148,8 +175,9 @@ describe("PurchaseService", () => {
     const input = {
       taskId: "task-1",
       delegationId: "research-agent",
-      purchaseKey: "purchase-1",
+      purchaseRef: "purchase-1",
       serviceId: merchant.serviceId,
+      resourceId: merchant.resourceId,
       now,
     };
 
@@ -172,8 +200,9 @@ describe("PurchaseService", () => {
     const result = await service.purchase({
       taskId: "task-1",
       delegationId: "research-agent",
-      purchaseKey: "blocked",
+      purchaseRef: "blocked",
       serviceId: merchant.serviceId,
+      resourceId: merchant.resourceId,
       now,
     });
 
@@ -187,8 +216,9 @@ describe("PurchaseService", () => {
     const result = await service.purchase({
       taskId: "task-1",
       delegationId: "research-agent",
-      purchaseKey: "blocked",
+      purchaseRef: "blocked",
       serviceId: "https://attacker.example/paid",
+      resourceId: merchant.resourceId,
       now,
     });
 
@@ -206,8 +236,9 @@ describe("PurchaseService", () => {
     const result = await service.purchase({
       taskId: "task-1",
       delegationId: "research-agent",
-      purchaseKey: "uncertain",
+      purchaseRef: "uncertain",
       serviceId: merchant.serviceId,
+      resourceId: merchant.resourceId,
       now,
     });
 
@@ -222,8 +253,9 @@ describe("PurchaseService", () => {
     const result = await service.purchase({
       taskId: "task-1",
       delegationId: "research-agent",
-      purchaseKey: "unconfirmed",
+      purchaseRef: "unconfirmed",
       serviceId: merchant.serviceId,
+      resourceId: merchant.resourceId,
       now,
     });
 
@@ -241,8 +273,9 @@ describe("PurchaseService", () => {
     const reconciled = await service.purchase({
       taskId: "task-1",
       delegationId: "research-agent",
-      purchaseKey: "unconfirmed",
+      purchaseRef: "unconfirmed",
       serviceId: merchant.serviceId,
+      resourceId: merchant.resourceId,
       now: now + 1,
     });
     expect(reconciled).toMatchObject({
@@ -269,8 +302,9 @@ describe("PurchaseService", () => {
     const result = await service.purchase({
       taskId: "task-1",
       delegationId: "research-agent",
-      purchaseKey: "failed",
+      purchaseRef: "failed",
       serviceId: merchant.serviceId,
+      resourceId: merchant.resourceId,
       now,
     });
 
