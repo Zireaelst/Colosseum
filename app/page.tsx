@@ -50,7 +50,7 @@ export default function Home() {
           <div className="proof-row">
             <span><strong>x402 V2</strong> exact payments</span>
             <span><strong>10 / 4 / 3</strong> delegated budget</span>
-            <span><strong>71 tests</strong> policy to settlement</span>
+            <span><strong>79 tests</strong> policy to settlement</span>
           </div>
         </div>
         <div className="hero-visual">
@@ -96,7 +96,7 @@ export default function Home() {
         <span className="eyebrow">Honest trust boundary</span>
         <h2>Solana proves the transfer.<br />Pactlet enforces the policy.</h2>
         <p>This hackathon MVP is custodial, backend-enforced, and devnet-only. It does not claim trustless or onchain-enforced delegation.</p>
-        <Link className="primary-link" href="/app">Run the local-first demo <span>↗</span></Link>
+        <Link className="primary-link" href="/app">Run the public demo <span>↗</span></Link>
       </section>
 
       <footer>

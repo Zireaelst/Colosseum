@@ -2,6 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
 import { DemoModes } from "../../app/components/public-demo";
+import Home from "../../app/page";
 
 describe("public demo interface", () => {
   it("defaults to a clearly labeled simulation and exposes live devnet separately", () => {
@@ -12,5 +13,9 @@ describe("public demo interface", () => {
     expect(html).toContain("Live Devnet");
     expect(html).toContain("single-process");
     expect(html).not.toContain("explorer.solana.com/tx/");
+  });
+
+  it("keeps the landing-page verification count current", () => {
+    expect(renderToStaticMarkup(<Home />)).toContain("79 tests");
   });
 });

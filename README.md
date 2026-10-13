@@ -6,7 +6,7 @@ The Solana transaction proves the token transfer. Budget, service, expiry, cance
 
 ## Current status
 
-M0/M1 are complete. The M2–M5 code path is implemented: wallet proof, disposable task account, 10 test-USDC funding transaction, 4/3 specialist delegations, fixed x402 merchant, guarded purchase service, Jev routing, Agents SDK manager/specialists, and backend-driven dashboard. `/app` also includes a deterministic public walkthrough that works without a wallet or server state and labels every result `SIMULATED`. Seventy-eight tests, typecheck, and the production build pass. A local merchant smoke test returned a real package-generated V2 `exact` challenge. No devnet transfer or x402 settlement has been broadcast yet, so onchain acceptance remains pending devnet configuration and an explicit wallet approval.
+M0/M1 are complete. The M2–M5 code path is implemented: wallet proof, disposable task account, 10 test-USDC funding transaction, 4/3 specialist delegations, fixed x402 merchant, guarded purchase service, Jev routing, Agents SDK manager/specialists, and backend-driven dashboard. `/app` also includes a deterministic public walkthrough that works without a wallet or server state and labels every result `SIMULATED`. Seventy-nine tests, typecheck, and the production build pass. A local merchant smoke test returned a real package-generated V2 `exact` challenge. No devnet transfer or x402 settlement has been broadcast yet, so onchain acceptance remains pending devnet configuration and an explicit wallet approval.
 
 See [docs/feasibility.md](docs/feasibility.md), [docs/architecture.md](docs/architecture.md), [docs/security.md](docs/security.md), [docs/roadmap.md](docs/roadmap.md), and the [Turkish submission package](docs/submission-tr.md).
 
