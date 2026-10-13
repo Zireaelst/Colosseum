@@ -20,10 +20,10 @@ export async function POST(
   }
   try {
     const { id } = await context.params;
-    if (taskAccountStore.task(id).ownerWallet !== ownerWallet) {
+    if ((await taskAccountStore.task(id)).ownerWallet !== ownerWallet) {
       return NextResponse.json({ error: "TASK_NOT_FOUND" }, { status: 404 });
     }
-    ledger.cancelDelegation(runtimeIds(id).research, Date.now());
+    await ledger.cancelDelegation(runtimeIds(id).research, Date.now());
     return NextResponse.json({ state: "cancelled", delegation: "research" });
   } catch {
     return NextResponse.json({ error: "ALREADY_CANCELLED_OR_UNKNOWN" }, { status: 409 });

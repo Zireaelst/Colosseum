@@ -36,7 +36,7 @@ export async function POST(
     return NextResponse.json({ error: "INVALID_AGENT_REQUEST" }, { status: 400 });
   }
   const { id } = await context.params;
-  const task = taskAccountStore.task(id);
+  const task = await taskAccountStore.task(id);
   if (task.ownerWallet !== ownerWallet) {
     return NextResponse.json({ error: "TASK_NOT_FOUND" }, { status: 404 });
   }

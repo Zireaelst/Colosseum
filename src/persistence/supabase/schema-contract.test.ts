@@ -1,15 +1,15 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-const migration = readFileSync(
-  join(
-    process.cwd(),
-    "supabase/migrations/20261013191833_pactlet_ledger.sql",
-  ),
-  "utf8",
-).toLowerCase();
+const migrationDirectory = join(process.cwd(), "supabase/migrations");
+const migration = readdirSync(migrationDirectory)
+  .filter((name) => name.endsWith(".sql"))
+  .sort()
+  .map((name) => readFileSync(join(migrationDirectory, name), "utf8"))
+  .join("\n")
+  .toLowerCase();
 
 describe("Pactlet Supabase migration", () => {
   it("creates every separated ledger concept", () => {
@@ -32,6 +32,16 @@ describe("Pactlet Supabase migration", () => {
     expect(migration).toContain("function public.reserve_purchase");
     expect(migration).toContain("function public.initialize_task_authority");
     expect(migration).toContain("function public.mark_task_funded");
+    for (const transition of [
+      "available_amount",
+      "cancel_delegation",
+      "mark_settlement_pending",
+      "record_pending_signature",
+      "fail_payment",
+      "confirm_settlement",
+    ]) {
+      expect(migration).toContain(`function public.${transition}`);
+    }
     expect(migration).toContain("for update");
     expect(migration).toContain("security invoker");
   });

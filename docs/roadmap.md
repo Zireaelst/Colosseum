@@ -106,9 +106,11 @@ Current gate: the Pactlet landing page and `/app` public walkthrough use the pro
 - The merchant validates its fixed recipient and refuses to listen unless the
   live facilitator advertises x402 V2 Solana devnet `exact`. It now supports an
   explicit public bind host and platform-provided `PORT`; deployment is still open.
-- Disposable task signer seeds and public task metadata now persist in local
-  SQLite. Seeds use AES-256-GCM with task-ID binding and a server-only master key;
-  live task creation fails closed when the key/database configuration is missing.
-  This is an encrypted local vault, not production KMS or hosted durable storage.
-- Still open: durable hosted transactional storage, public HTTPS merchant hosting,
-  managed remote signing, and confirmed funding/x402 Explorer signatures.
+- Supabase Postgres now stores hosted tasks, mandates, encrypted task signers,
+  delegations, reservations, settlements, and events. Row-locking database RPCs
+  enforce reservation and idempotency transitions. A live concurrency test
+  proved competing 3 USDC reservations cannot jointly exceed a 4 USDC budget.
+- All ledger tables have RLS enabled; direct `anon` and `authenticated` access
+  is revoked. Supabase security and performance advisors reported no issues.
+- Still open: public HTTPS merchant hosting, production-grade managed remote
+  signing, and confirmed funding/x402 Explorer signatures.

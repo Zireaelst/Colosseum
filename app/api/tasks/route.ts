@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
   }
 
   const task = await taskAccountStore.create(ownerWallet);
-  initializeTaskAuthority(ledger, {
+  await initializeTaskAuthority(ledger, {
     taskId: task.id,
     ownerWallet,
     mandate,

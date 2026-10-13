@@ -10,12 +10,12 @@ afterEach(() => {
 });
 
 describe("initializeTaskAuthority", () => {
-  test("creates a 10 USDC manager with 4/3 USDC bounded specialists", () => {
+  test("creates a 10 USDC manager with 4/3 USDC bounded specialists", async () => {
     const ledger = Ledger.memory();
     openLedgers.push(ledger);
     const now = Date.UTC(2026, 9, 13, 6, 0, 0);
 
-    const ids = initializeTaskAuthority(ledger, {
+    const ids = await initializeTaskAuthority(ledger, {
       taskId: "task-1",
       ownerWallet: "owner",
       now,
@@ -47,6 +47,39 @@ describe("initializeTaskAuthority", () => {
         expect.objectContaining({ id: ids.analysis, available: 3_000_000n }),
       ]),
       payments: [],
+    });
+  });
+
+  test("uses one atomic initialization call for a durable store", async () => {
+    const calls: unknown[] = [];
+    const store = {
+      initializeTaskAuthority: async (input: unknown) => {
+        calls.push(input);
+      },
+    };
+
+    const ids = await initializeTaskAuthority(store, {
+      taskId: "task-2",
+      ownerWallet: "owner",
+      now: 1_800_000_000_000,
+      mandate: {
+        purpose: "Buy a research brief",
+        serviceId: "research-api",
+        resourceId: "research-brief",
+        maxAmount: 1_000n,
+        durationMinutes: 30,
+      },
+    });
+
+    expect(calls).toHaveLength(1);
+    expect(calls[0]).toMatchObject({
+      taskId: "task-2",
+      managerId: ids.manager,
+      researchId: ids.research,
+      analysisId: ids.analysis,
+      allocation: 10_000_000n,
+      researchAllocation: 4_000_000n,
+      analysisAllocation: 3_000_000n,
     });
   });
 });

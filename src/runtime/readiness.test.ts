@@ -9,6 +9,8 @@ describe("runtime readiness", () => {
       TYPESAFE_API_KEY: "",
       X402_MERCHANT_PAY_TO: "recipient",
       SOLANA_DEVNET_RPC_URL: "rpc",
-    })).toEqual({ ai: true, jev: false, merchant: true, rpc: true });
+      SUPABASE_URL: "https://example.supabase.co",
+      SUPABASE_SERVICE_ROLE_KEY: "server-secret",
+    })).toEqual({ ai: true, jev: false, merchant: true, rpc: true, storage: true });
   });
 });

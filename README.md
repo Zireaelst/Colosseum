@@ -2,7 +2,11 @@
 
 Pactlet is a devnet-only Colosseum Crypto World's Fair MVP for enforcing task-scoped hierarchical authority at the point an AI agent attempts an x402 payment.
 
-The Solana transaction proves the token transfer. Budget, service, expiry, cancellation, and delegation rules are enforced by a trusted backend and SQLite ledger. This is a custodial prototype, not a trustless agent wallet or production payment system.
+The Solana transaction proves the token transfer. Budget, service, expiry,
+cancellation, and delegation rules are enforced by a trusted backend. Hosted
+runtime state is stored in a Supabase Postgres ledger; SQLite remains the local
+test/reference implementation. This is a custodial prototype, not a trustless
+agent wallet or production payment system.
 
 ## Current status
 
@@ -92,6 +96,10 @@ The marketing landing page is served at `/`; the public walkthrough and live-dev
 
 `/app` defaults to **Public Demo**, a browser-only deterministic walkthrough of the 10/4/3 delegation, allowed purchase, budget rejection, cancellation, and post-cancellation rejection. It creates no signature or transfer. **Live Devnet** preserves the wallet-backed local flow, which still requires one long-running Node process, SQLite, and the separate merchant service.
 
+Set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` only in server-side local and
+deployment environments. The production runtime fails closed without both;
+neither value may use a `NEXT_PUBLIC_` prefix.
+
 Run `pnpm merchant` beside `pnpm dev` after configuring the devnet facilitator
 and merchant owner. Connect a Wallet Standard Solana wallet, sign the nonce,
 enter the task purpose, and create the fixed paid-research mandate. Inspect the
@@ -100,9 +108,10 @@ stays unavailable until funding is confirmed.
 
 ## Limitations
 
-- Single local Node process and SQLite ledger only.
-- Backend-held disposable devnet task keys encrypted in local SQLite with a
-  server-only AES-256-GCM key; this is not a production KMS.
+- Hosted state uses Supabase Postgres with atomic reservation RPCs; SQLite is
+  retained only for local/test operation.
+- Backend-held disposable devnet task keys are encrypted before persistence
+  with a server-only AES-256-GCM key; this is not a production KMS.
 - No smart account, onchain policy program, distributed lock, HA, or production KMS.
 - No arbitrary paid URLs, marketplace, multichain routing, A2A, Swig, or custom Solana program.
 - A timeout after broadcast is pending, not a definite failure; funds remain reserved until reconciliation.
@@ -112,4 +121,6 @@ stays unavailable until funding is confirmed.
   exact 10,000,000 base-unit token delta. The result still trusts the configured
   devnet RPC response.
 - Groq, TypeSafe/Jev, facilitator, RPC, and merchant readiness are shown as booleans only; secret values are never returned by the task API.
-- The Vercel public walkthrough is deliberately simulated. A durable hosted live mode requires the P0 work in [the hosted MVP backlog](docs/superpowers/specs/2026-10-13-public-demo-design.md#backlog-for-a-fully-working-hosted-mvp).
+- The browser-only walkthrough remains deliberately simulated. Hosted live task
+  state is durable, but the paid path still requires a public HTTPS merchant and
+  a user-approved devnet funding transaction.

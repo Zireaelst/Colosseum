@@ -6,7 +6,11 @@ import type {
   SettleResponse,
 } from "@x402/core/types";
 
-import type { Ledger, ReservePurchaseResult } from "../ledger/ledger";
+import type {
+  PaymentRequestRecord,
+  ReservePurchaseInput,
+  ReservePurchaseResult,
+} from "../ledger/ledger";
 import {
   SOLANA_DEVNET_NETWORK,
   validatePaymentTerms,
@@ -25,9 +29,21 @@ export interface PaymentTransport {
     url: string;
     requirement: PaymentRequirements;
     signer: KeyPairSigner;
-    onSigned(): void;
+    onSigned(): void | Promise<void>;
   }): Promise<SettleResponse>;
   verifySettlement(settlement: SettleResponse): Promise<boolean>;
+}
+
+type Awaitable<T> = T | Promise<T>;
+
+export interface PurchaseLedger {
+  availableAmount(delegationId: string, now: number): Awaitable<bigint>;
+  reservePurchase(input: ReservePurchaseInput): Awaitable<ReservePurchaseResult>;
+  paymentRequest(paymentRequestId: string): Awaitable<PaymentRequestRecord>;
+  markSettlementPending(paymentRequestId: string, now: number): Awaitable<void>;
+  recordPendingSignature(paymentRequestId: string, signature: string, now: number): Awaitable<void>;
+  failPayment(paymentRequestId: string, failureCode: string, now: number): Awaitable<void>;
+  confirmSettlement(paymentRequestId: string, signature: string, now: number): Awaitable<void>;
 }
 
 export interface PurchaseInput {
@@ -58,7 +74,7 @@ export type PurchaseResult =
 export class PurchaseService {
   constructor(
     private readonly dependencies: {
-      ledger: Ledger;
+      ledger: PurchaseLedger;
       merchant: MerchantService;
       transport: PaymentTransport;
       signerForTask(taskId: string): KeyPairSigner | Promise<KeyPairSigner>;
@@ -118,7 +134,7 @@ export class PurchaseService {
       };
     }
 
-    const available = ledger.availableAmount(input.delegationId, now);
+    const available = await ledger.availableAmount(input.delegationId, now);
     let selected: PaymentRequirements | undefined;
     let rejectionCode = "UNSUPPORTED_PAYMENT_TERMS";
     for (const requirement of paymentRequired.accepts) {
@@ -143,7 +159,7 @@ export class PurchaseService {
       return { ok: false, code: rejectionCode, state: "rejected" };
     }
 
-    const reservation = ledger.reservePurchase({
+    const reservation = await ledger.reservePurchase({
       delegationId: input.delegationId,
       purchaseRef: input.purchaseRef,
       serviceId: input.serviceId,
@@ -154,7 +170,7 @@ export class PurchaseService {
 
     if (!reservation.ok) return this.rejectedReservation(reservation);
     if (reservation.replayed) {
-      const stored = ledger.paymentRequest(reservation.paymentRequestId);
+      const stored = await ledger.paymentRequest(reservation.paymentRequestId);
       if (
         stored.state === "settlement_pending" &&
         stored.transactionSignature &&
@@ -164,7 +180,7 @@ export class PurchaseService {
           network: SOLANA_DEVNET_NETWORK,
         }))
       ) {
-        ledger.confirmSettlement(stored.id, stored.transactionSignature, now);
+        await ledger.confirmSettlement(stored.id, stored.transactionSignature, now);
         return {
           ok: true,
           paymentRequestId: stored.id,
@@ -185,10 +201,10 @@ export class PurchaseService {
     }
 
     let signed = false;
-    const onSigned = () => {
+    const onSigned = async () => {
       if (signed) return;
       signed = true;
-      ledger.markSettlementPending(reservation.paymentRequestId, Date.now());
+      await ledger.markSettlementPending(reservation.paymentRequestId, Date.now());
     };
 
     try {
@@ -200,7 +216,7 @@ export class PurchaseService {
       });
 
       if (!settlement.success) {
-        ledger.failPayment(
+        await ledger.failPayment(
           reservation.paymentRequestId,
           settlement.errorReason ?? "x402_settlement_failed",
           Date.now(),
@@ -215,7 +231,7 @@ export class PurchaseService {
 
       if (!signed) onSigned();
       if (settlement.transaction) {
-        ledger.recordPendingSignature(
+        await ledger.recordPendingSignature(
           reservation.paymentRequestId,
           settlement.transaction,
           Date.now(),
@@ -232,7 +248,7 @@ export class PurchaseService {
           paymentRequestId: reservation.paymentRequestId,
         };
       }
-      ledger.confirmSettlement(
+      await ledger.confirmSettlement(
         reservation.paymentRequestId,
         settlement.transaction,
         Date.now(),
@@ -254,7 +270,7 @@ export class PurchaseService {
           paymentRequestId: reservation.paymentRequestId,
         };
       }
-      ledger.failPayment(
+      await ledger.failPayment(
         reservation.paymentRequestId,
         "pre_signature_failure",
         Date.now(),

@@ -59,6 +59,14 @@ describe("auth store wrappers", () => {
         PACTLET_SIGNER_MASTER_KEY: randomBytes(32).toString("base64url"),
       }),
     ).not.toThrow();
+    expect(() =>
+      assertTaskAccountStoreConfigured({
+        NODE_ENV: "production",
+        SUPABASE_URL: "https://example.supabase.co",
+        SUPABASE_SERVICE_ROLE_KEY: "server-secret",
+        PACTLET_SIGNER_MASTER_KEY: randomBytes(32).toString("base64url"),
+      }),
+    ).not.toThrow();
   });
 
   test("verifies challenges and sessions across independent calls", () => {

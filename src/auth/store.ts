@@ -1,5 +1,7 @@
 import { TaskAccountStore } from "../solana/task-accounts";
 import { parseSignerMasterKey } from "../solana/task-signer-vault";
+import { createPactletSupabaseClient, SupabaseGateway } from "../persistence/supabase/client";
+import { SupabaseTaskAccountStore } from "../persistence/supabase/task-account-store";
 import {
   createSessionToken,
   issueWalletChallenge as issueSignedWalletChallenge,
@@ -9,7 +11,7 @@ import {
 } from "./signed-wallet-auth";
 
 const globalNonceStore = globalThis as typeof globalThis & {
-  pactletTaskAccountStore?: TaskAccountStore;
+  pactletTaskAccountStore?: TaskAccountStore | SupabaseTaskAccountStore;
 };
 
 type AuthEnvironment = Record<string, string | undefined>;
@@ -24,18 +26,24 @@ export class TaskSignerConfigurationError extends Error {
 }
 
 function taskAccountConfiguration(environment: AuthEnvironment): {
-  databasePath: string;
+  databasePath?: string;
+  supabaseUrl?: string;
+  supabaseServiceRoleKey?: string;
   masterKey: Uint8Array;
 } {
   const databasePath = environment.PACTLET_DATABASE_PATH?.trim() ?? "";
+  const supabaseUrl = environment.SUPABASE_URL?.trim() ?? "";
+  const supabaseServiceRoleKey = environment.SUPABASE_SERVICE_ROLE_KEY?.trim() ?? "";
   const encodedMasterKey =
     environment.PACTLET_SIGNER_MASTER_KEY?.trim() ?? "";
-  if (!databasePath || !encodedMasterKey) {
+  if ((!databasePath && (!supabaseUrl || !supabaseServiceRoleKey)) || !encodedMasterKey) {
     throw new TaskSignerConfigurationError();
   }
   try {
     return {
-      databasePath,
+      ...(supabaseUrl && supabaseServiceRoleKey
+        ? { supabaseUrl, supabaseServiceRoleKey }
+        : { databasePath }),
       masterKey: parseSignerMasterKey(encodedMasterKey),
     };
   } catch {
@@ -49,11 +57,24 @@ export function assertTaskAccountStoreConfigured(
   taskAccountConfiguration(environment);
 }
 
-function createTaskAccountStore(environment: AuthEnvironment): TaskAccountStore {
+function createTaskAccountStore(
+  environment: AuthEnvironment,
+): TaskAccountStore | SupabaseTaskAccountStore {
   try {
     const configuration = taskAccountConfiguration(environment);
+    if (configuration.supabaseUrl && configuration.supabaseServiceRoleKey) {
+      return new SupabaseTaskAccountStore(
+        new SupabaseGateway(
+          createPactletSupabaseClient(
+            configuration.supabaseUrl,
+            configuration.supabaseServiceRoleKey,
+          ),
+        ),
+        configuration.masterKey,
+      );
+    }
     return TaskAccountStore.open(
-      configuration.databasePath,
+      configuration.databasePath as string,
       configuration.masterKey,
     );
   } catch (error) {

@@ -32,7 +32,7 @@ export async function POST(
 
   try {
     const { id } = await context.params;
-    const task = taskAccountStore.task(id);
+    const task = await taskAccountStore.task(id);
     if (task.ownerWallet !== ownerWallet) {
       return NextResponse.json({ error: "TASK_NOT_FOUND" }, { status: 404 });
     }
@@ -74,7 +74,7 @@ export async function POST(
       );
     }
 
-    taskAccountStore.markFunded(id, parsed.data.signature);
+    await taskAccountStore.markFunded(id, parsed.data.signature);
     return NextResponse.json({
       state: "confirmed",
       signature: parsed.data.signature,

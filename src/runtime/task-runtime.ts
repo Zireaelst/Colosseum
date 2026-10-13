@@ -19,19 +19,57 @@ export function runtimeIds(taskId: string): TaskRuntimeIds {
   };
 }
 
-export function initializeTaskAuthority(
-  ledger: Ledger,
+interface AtomicAuthorityStore {
+  initializeTaskAuthority(input: {
+    taskId: string;
+    ownerWallet: string;
+    allocation: bigint;
+    expiresAt: number;
+    purpose: string;
+    serviceId: string;
+    resourceId: string;
+    maxAmount: bigint;
+    managerId: string;
+    researchId: string;
+    analysisId: string;
+    specialistExpiresAt: number;
+    researchAllocation: bigint;
+    analysisAllocation: bigint;
+  }): Promise<void>;
+}
+
+export async function initializeTaskAuthority(
+  ledger: Ledger | AtomicAuthorityStore,
   input: {
     taskId: string;
     ownerWallet: string;
     mandate: TaskMandate;
     now?: number;
   },
-): TaskRuntimeIds {
+): Promise<TaskRuntimeIds> {
   const now = input.now ?? Date.now();
   const expiresAt = now + input.mandate.durationMinutes * 60_000;
   const specialistExpiresAt = Math.min(expiresAt, now + 45 * 60_000);
   const ids = runtimeIds(input.taskId);
+  if ("initializeTaskAuthority" in ledger) {
+    await ledger.initializeTaskAuthority({
+      taskId: input.taskId,
+      ownerWallet: input.ownerWallet,
+      allocation: TASK_ALLOCATION,
+      expiresAt,
+      purpose: input.mandate.purpose,
+      serviceId: input.mandate.serviceId,
+      resourceId: input.mandate.resourceId,
+      maxAmount: input.mandate.maxAmount,
+      managerId: ids.manager,
+      researchId: ids.research,
+      analysisId: ids.analysis,
+      specialistExpiresAt,
+      researchAllocation: RESEARCH_ALLOCATION,
+      analysisAllocation: 3_000_000n,
+    });
+    return ids;
+  }
   ledger.createTask({
     id: input.taskId,
     ownerWallet: input.ownerWallet,

@@ -90,7 +90,7 @@ function fixture(
   const transport: PaymentTransport = {
     getChallenge: vi.fn().mockResolvedValue(paymentRequired),
     pay: vi.fn(async ({ onSigned }) => {
-      onSigned();
+      await onSigned();
       return settled();
     }),
     verifySettlement: vi.fn().mockResolvedValue(true),

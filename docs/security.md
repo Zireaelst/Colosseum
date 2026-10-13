@@ -2,17 +2,19 @@
 
 ## Security claim
 
-Solana devnet and the x402 SVM scheme prove the signed token transfer. pactlet's hierarchical authorization is enforced by a trusted backend. This prototype is custodial, single-process, and unsuitable for real funds.
+Solana devnet and the x402 SVM scheme prove the signed token transfer. pactlet's
+hierarchical authorization is enforced by a trusted backend. This prototype is
+custodial and unsuitable for real funds.
 
 ## Assets and trust boundaries
 
 - User wallet: remains in the wallet provider and signs authentication/funding only.
-- Task signer: disposable devnet seed encrypted at rest in the local SQLite
-  database and reconstructed only inside the backend purchase path.
+- Task signer: disposable devnet seed encrypted before Supabase/SQLite
+  persistence and reconstructed only inside the backend purchase path.
 - API credentials: server-only environment values.
 - Wallet authentication: five-minute signed challenges and thirty-minute
   HMAC-authenticated session cookies, bound to the configured application origin.
-- Policy state: authoritative SQLite records, not model text or browser state.
+- Policy state: authoritative database records, not model text or browser state.
 - External input: wallet messages, x402 challenges, facilitator/RPC replies, merchant responses, and model outputs are untrusted.
 
 ## Threats and controls
@@ -33,7 +35,7 @@ Purchase input uses a configured service/resource pair, not URLs. The model's
 purchase tool has no arguments; identity, reference, service, resource, amount,
 endpoint, and signer come from server runtime context. The HTTP client uses fixed
 origins, blocks redirects, and matches the x402 resource URL, network, mint,
-recipient, amount, and scheme before signing. SQLite also checks the stored task
+recipient, amount, and scheme before signing. The ledger also checks the stored task
 mandate and per-purchase maximum inside the reservation transaction.
 
 ### Replay and duplicate payment
@@ -56,7 +58,10 @@ prototype risk. Durable one-time challenge consumption remains production backlo
 
 ### Concurrent overspend
 
-Available amount includes settled spend, pending reservations, and active child allocations. Calculation and reservation are one SQLite immediate transaction. A unique request key and transactional write prevent two concurrent requests from both spending the same availability.
+Available amount includes settled spend, pending reservations, and active child
+allocations. Hosted calculation and reservation lock the delegation row in one
+Postgres transaction; local tests use one SQLite immediate transaction. A live
+Supabase test proved competing requests cannot jointly exceed allocation.
 
 ### Timeout and ambiguous settlement
 
@@ -73,14 +78,13 @@ Startup checks `/supported` for the exact protocol/network/scheme tuple. Every c
 ### Database or process failure
 
 Wallet challenges and sessions survive process replacement because they are
-cryptographically verifiable rather than stored in memory. Task account metadata,
-funding signatures, and AES-256-GCM-encrypted signer seeds now survive a local
-process restart in SQLite when `PACTLET_DATABASE_PATH` and
-`PACTLET_SIGNER_MASTER_KEY` are configured. Live task creation fails closed when
-that configuration is absent or invalid. This is not a production KMS: there is
-no distributed lock, HA, managed rotation, backup, or multi-process guarantee.
-Production still needs durable shared storage, remote signing, reconciliation
-workers, incident handling, and monitored RPC redundancy.
+cryptographically verifiable rather than stored in memory. Hosted task state,
+funding signatures, and AES-256-GCM-encrypted signer seeds persist in Supabase;
+local tests retain SQLite. Every ledger table enables RLS and revokes direct
+`anon`/`authenticated` access. The server secret and signer master key remain
+server-only. This is not a production KMS: production still needs remote signing,
+managed rotation, reconciliation workers, incident handling, backups, and
+monitored RPC redundancy.
 
 ### Funding attribution
 

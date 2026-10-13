@@ -21,13 +21,13 @@ export async function GET(
   }
   try {
     const { id } = await context.params;
-    const task = taskAccountStore.task(id);
+    const task = await taskAccountStore.task(id);
     if (task.ownerWallet !== ownerWallet) {
       return NextResponse.json({ error: "TASK_NOT_FOUND" }, { status: 404 });
     }
     return NextResponse.json(
       jsonSafe({
-        ...ledger.taskSnapshot(id, Date.now()),
+        ...(await ledger.taskSnapshot(id, Date.now())),
         account: task,
         readiness: readRuntimeReadiness(),
         merchantPreview: process.env.X402_MERCHANT_PAY_TO

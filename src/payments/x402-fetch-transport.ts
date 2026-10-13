@@ -60,7 +60,7 @@ export class X402FetchTransport implements PaymentTransport {
           : [],
       )
       .onAfterPaymentCreation(async () => {
-        onSigned();
+        await onSigned();
       })
       .onPaymentResponse(async (context) => {
         settlement = context.settleResponse;
