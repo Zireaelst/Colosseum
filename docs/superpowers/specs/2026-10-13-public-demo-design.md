@@ -1,7 +1,7 @@
 # Pactlet Public Demo Design
 
 **Date:** 2026-10-13  
-**Status:** Approved direction; written-spec review pending
+**Status:** Approved
 
 ## Goal
 
