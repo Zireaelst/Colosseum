@@ -29,7 +29,7 @@
 - Produces: `reducePublicDemo(state, action): PublicDemoState`
 - Produces: `PublicDemoAction` for `allow_purchase`, `reject_over_budget`, `cancel_research`, `reject_after_cancel`, and `reset`.
 
-- [ ] **Step 1: Write the failing reducer tests**
+- [x] **Step 1: Write the failing reducer tests**
 
 Cover initial 10/4/3 allocations, a 1,000-base-unit research settlement, an over-budget rejection that leaves budget unchanged, cancellation, a post-cancel rejection, and reset.
 
@@ -55,13 +55,13 @@ expect(blocked.payments.at(-1)).toMatchObject({ rejectionCode: "AUTHORITY_CANCEL
 expect(reducePublicDemo(blocked, { type: "reset" })).toEqual(initial);
 ```
 
-- [ ] **Step 2: Verify the tests fail for the missing module**
+- [x] **Step 2: Verify the tests fail for the missing module**
 
 Run: `pnpm vitest run src/demo/public-demo.test.ts`
 
 Expected: FAIL because `./public-demo` does not exist.
 
-- [ ] **Step 3: Implement the minimal pure reducer**
+- [x] **Step 3: Implement the minimal pure reducer**
 
 Use immutable state objects and append deterministic event/payment records. Derive available amounts as allocation minus settled spending and active child allocations.
 
@@ -80,13 +80,13 @@ export function reducePublicDemo(
 ): PublicDemoState;
 ```
 
-- [ ] **Step 4: Verify reducer tests pass**
+- [x] **Step 4: Verify reducer tests pass**
 
 Run: `pnpm vitest run src/demo/public-demo.test.ts`
 
 Expected: all public-demo tests PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/demo/public-demo.ts src/demo/public-demo.test.ts
@@ -105,7 +105,7 @@ git commit -m "feat: add deterministic public demo state"
 - Produces: `PublicDemo` client component with guided actions and clear simulation labels.
 - Produces: `DemoModes` client component that defaults to Public Demo and reveals `WalletConnect` only under Live Devnet.
 
-- [ ] **Step 1: Add a focused source-level UI test**
+- [x] **Step 1: Add a focused source-level UI test**
 
 Assert that the app defaults to the public demo, includes the `SIMULATED` disclosure, and labels Live Devnet as local/single-process.
 
@@ -117,13 +117,13 @@ expect(html).toContain("Live Devnet");
 expect(html).toContain("single-process");
 ```
 
-- [ ] **Step 2: Verify the UI test fails before components exist**
+- [x] **Step 2: Verify the UI test fails before components exist**
 
 Run: `pnpm vitest run src/demo/public-demo-ui.test.ts`
 
 Expected: FAIL for missing public-demo component/copy.
 
-- [ ] **Step 3: Implement the public dashboard and guided buttons**
+- [x] **Step 3: Implement the public dashboard and guided buttons**
 
 Render task budget, the manager/research/analysis tree, policy events, payment rows, and reset. Disable actions already completed and do not render an Explorer link for simulated results.
 
@@ -134,7 +134,7 @@ export function PublicDemo() {
 }
 ```
 
-- [ ] **Step 4: Add the mode switch and hosted limitation copy**
+- [x] **Step 4: Add the mode switch and hosted limitation copy**
 
 Default to Public Demo. Show the existing wallet component only after the user selects Live Devnet, with a warning that hosted durable storage and a public merchant are still backlog items.
 
@@ -145,13 +145,13 @@ export function DemoModes() {
 }
 ```
 
-- [ ] **Step 5: Add responsive styles and verify focused tests**
+- [x] **Step 5: Add responsive styles and verify focused tests**
 
 Run: `pnpm vitest run src/demo/public-demo.test.ts src/demo/public-demo-ui.test.ts`
 
 Expected: all focused tests PASS.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add app/app/page.tsx app/components/public-demo.tsx app/globals.css src/demo/public-demo-ui.test.ts
@@ -168,11 +168,11 @@ git commit -m "feat: ship public Pactlet walkthrough"
 **Interfaces:**
 - Documents: exact public-simulation versus local-live boundary and hosted-MVP backlog.
 
-- [ ] **Step 1: Update public-demo documentation**
+- [x] **Step 1: Update public-demo documentation**
 
 Document `/app` modes, keep the real-settlement limitation explicit, and link the approved hosted-MVP backlog.
 
-- [ ] **Step 2: Run repository verification**
+- [x] **Step 2: Run repository verification**
 
 Run: `pnpm test && pnpm typecheck && pnpm build && git diff --check`
 

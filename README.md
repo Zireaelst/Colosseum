@@ -6,7 +6,7 @@ The Solana transaction proves the token transfer. Budget, service, expiry, cance
 
 ## Current status
 
-M0/M1 are complete. The M2–M5 code path is implemented: wallet proof, disposable task account, 10 test-USDC funding transaction, 4/3 specialist delegations, fixed x402 merchant, guarded purchase service, Jev routing, Agents SDK manager/specialists, and backend-driven dashboard. Seventy-one tests, typecheck, and the production build pass. A local merchant smoke test returned a real package-generated V2 `exact` challenge. No devnet transfer or x402 settlement has been broadcast yet, so onchain acceptance remains pending devnet configuration and an explicit wallet approval.
+M0/M1 are complete. The M2–M5 code path is implemented: wallet proof, disposable task account, 10 test-USDC funding transaction, 4/3 specialist delegations, fixed x402 merchant, guarded purchase service, Jev routing, Agents SDK manager/specialists, and backend-driven dashboard. `/app` also includes a deterministic public walkthrough that works without a wallet or server state and labels every result `SIMULATED`. Seventy-eight tests, typecheck, and the production build pass. A local merchant smoke test returned a real package-generated V2 `exact` challenge. No devnet transfer or x402 settlement has been broadcast yet, so onchain acceptance remains pending devnet configuration and an explicit wallet approval.
 
 See [docs/feasibility.md](docs/feasibility.md), [docs/architecture.md](docs/architecture.md), [docs/security.md](docs/security.md), [docs/roadmap.md](docs/roadmap.md), and the [Turkish submission package](docs/submission-tr.md).
 
@@ -63,7 +63,9 @@ pnpm dev
 pnpm merchant
 ```
 
-The marketing landing page is served at `/`; the interactive wallet and delegation MVP is at `/app`.
+The marketing landing page is served at `/`; the public walkthrough and live-devnet interface are at `/app`.
+
+`/app` defaults to **Public Demo**, a browser-only deterministic walkthrough of the 10/4/3 delegation, allowed purchase, budget rejection, cancellation, and post-cancellation rejection. It creates no signature or transfer. **Live Devnet** preserves the wallet-backed local flow, which still requires one long-running Node process, SQLite, and the separate merchant service.
 
 Run `pnpm merchant` beside `pnpm dev` after configuring the devnet facilitator and merchant owner. Connect a Wallet Standard Solana wallet, sign the nonce, create the task, and inspect the exact funding preview before approving the devnet transaction. The paid action stays unavailable until funding is confirmed.
 
@@ -77,3 +79,4 @@ Run `pnpm merchant` beside `pnpm dev` after configuring the devnet facilitator a
 - Cancellation prevents new purchases but cannot undo an already broadcast transaction.
 - Funding confirmation currently checks a confirmed signature plus the task ATA balance; production must attribute the exact token delta to that signature.
 - Groq, TypeSafe/Jev, facilitator, RPC, and merchant readiness are shown as booleans only; secret values are never returned by the task API.
+- The Vercel public walkthrough is deliberately simulated. A durable hosted live mode requires the P0 work in [the hosted MVP backlog](docs/superpowers/specs/2026-10-13-public-demo-design.md#backlog-for-a-fully-working-hosted-mvp).

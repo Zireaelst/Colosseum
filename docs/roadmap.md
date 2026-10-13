@@ -66,7 +66,7 @@ Acceptance:
 - Manager delegates 4 and 3 USDC without exceeding the 10 USDC parent allocation.
 - Cancellation blocks a later purchase.
 
-The authenticated task snapshot renders the 10/4/3 allocation tree, available amounts, service scopes, states, events, rejections, payment preview, Explorer links, and boolean runtime readiness. Cancellation is a server action and new demo runs use distinct purchase keys.
+The authenticated task snapshot renders the 10/4/3 allocation tree, available amounts, service scopes, states, events, rejections, payment preview, Explorer links, and boolean runtime readiness. Cancellation is a server action and new demo runs use distinct purchase keys. The public deployment now defaults to a deterministic browser-only walkthrough of allowed, over-budget, cancelled, and post-cancellation decisions; every result is explicitly labeled simulated.
 
 ## M6 — verification and demo handoff (`in progress`)
 
@@ -76,4 +76,4 @@ Acceptance:
 - `pnpm test`, `pnpm typecheck`, and `pnpm build` pass.
 - README and three-minute demo label every real and simulated component accurately.
 
-Current gate: 71 tests, typecheck, and production build pass. The Pactlet landing page and `/app` MVP shell use the provided brand assets. Remaining critical evidence is one user-approved devnet funding transaction followed by one real x402 settlement and Explorer verification. The live Groq and Jev calls remain credential-gated; local `.env` secrets are intentionally not committed.
+Current gate: the Pactlet landing page and `/app` public walkthrough use the provided brand assets, and the complete automated suite, typecheck, and production build are required before each deployment. Remaining critical evidence is one user-approved devnet funding transaction followed by one real x402 settlement and Explorer verification. The live Groq and Jev calls remain credential-gated; local `.env` secrets are intentionally not committed. Durable hosted-live requirements are prioritized as P0–P2 in `docs/superpowers/specs/2026-10-13-public-demo-design.md`.
