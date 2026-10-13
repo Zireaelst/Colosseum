@@ -22,6 +22,7 @@
     "@solana-program/token": "0.9.0",
     "@solana/kit": "5.5.1",
     "@solana/sysvars": "5.5.1",
+    "@supabase/supabase-js": "2.117.3",
     "@typesafe-ai/sdk": "0.6.0",
     "@wallet-standard/app": "1.1.1",
     "@wallet-standard/react": "1.0.3",
