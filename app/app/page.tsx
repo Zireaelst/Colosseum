@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { WalletConnect } from "../wallet-connect";
+import { DemoModes } from "../components/public-demo";
 
 export default function PactletApp() {
   return (
@@ -11,17 +11,17 @@ export default function PactletApp() {
       </nav>
 
       <header className="app-header">
-        <span className="badge"><i /> Devnet-only interactive MVP</span>
+        <span className="badge"><i /> Public walkthrough + live devnet</span>
         <h1>Delegate authority.<br /><em>Keep the limits.</em></h1>
-        <p>Prove wallet ownership, create a 10 test-USDC task, then inspect the exact payer, mint, amount, and recipient before approving any transfer.</p>
+        <p>Walk through Pactlet instantly in simulation mode, or switch to Live Devnet to inspect the wallet-backed integration boundary.</p>
       </header>
 
       <section className="app-panel">
         <div className="app-panel-heading">
-          <div><span className="eyebrow">01 / Connect</span><h2>Start a bounded task</h2></div>
-          <span className="status-pill warning">Trusted backend</span>
+          <div><span className="eyebrow">Interactive product demo</span><h2>Choose a demo mode</h2></div>
+          <span className="status-pill warning">Devnet only</span>
         </div>
-        <WalletConnect />
+        <DemoModes />
       </section>
 
       <p className="app-footnote">No mainnet funds. No agent-held private keys. Policy is backend-enforced; Solana devnet proves only the signed transfer.</p>
