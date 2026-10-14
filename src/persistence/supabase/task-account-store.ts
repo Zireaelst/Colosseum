@@ -96,7 +96,7 @@ export class SupabaseTaskAccountStore implements TaskAccountRepository {
     if (
       row.network !== SOLANA_DEVNET_NETWORK ||
       row.mint !== DEVNET_USDC_MINT ||
-      row.allocation_units !== "10000000"
+      String(row.allocation_units) !== "10000000"
     ) {
       throw new Error(`Task '${taskId}' has invalid devnet payment metadata`);
     }

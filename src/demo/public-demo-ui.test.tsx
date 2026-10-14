@@ -11,11 +11,13 @@ describe("public demo interface", () => {
     expect(html).toContain("Public Demo");
     expect(html).toContain("SIMULATED");
     expect(html).toContain("Live Devnet");
-    expect(html).toContain("single-process");
+    expect(html).toContain("hosted Supabase state");
+    expect(html).toContain("public x402 merchant");
+    expect(html).not.toContain("single-process");
     expect(html).not.toContain("explorer.solana.com/tx/");
   });
 
   it("keeps the landing-page verification count current", () => {
-    expect(renderToStaticMarkup(<Home />)).toContain("79 tests");
+    expect(renderToStaticMarkup(<Home />)).toContain("140+ tests");
   });
 });

@@ -50,7 +50,7 @@ export default function Home() {
           <div className="proof-row">
             <span><strong>x402 V2</strong> exact payments</span>
             <span><strong>10 / 4 / 3</strong> delegated budget</span>
-            <span><strong>79 tests</strong> policy to settlement</span>
+            <span><strong>140+ tests</strong> policy to settlement</span>
           </div>
         </div>
         <div className="hero-visual">
@@ -85,7 +85,7 @@ export default function Home() {
           <ol>
             <li><span>01</span><div><strong>Route the task</strong><p>Manager selects a bounded research or analysis specialist.</p></div></li>
             <li><span>02</span><div><strong>Validate authority</strong><p>Trusted backend checks scope, remaining budget, expiry, and cancellation.</p></div></li>
-            <li><span>03</span><div><strong>Reserve atomically</strong><p>SQLite prevents duplicate and concurrent overspend in the local MVP.</p></div></li>
+            <li><span>03</span><div><strong>Reserve atomically</strong><p>Supabase transactions prevent duplicate and concurrent overspend in the hosted MVP.</p></div></li>
             <li><span>04</span><div><strong>Settle on devnet</strong><p>x402 and Solana provide the payment transaction and Explorer signature.</p></div></li>
           </ol>
         </div>

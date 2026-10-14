@@ -116,6 +116,10 @@ Current gate: the Pactlet landing page and `/app` public walkthrough use the pro
   delegations, reservations, settlements, and events. Row-locking database RPCs
   enforce reservation and idempotency transitions. A live concurrency test
   proved competing 3 USDC reservations cannot jointly exceed a 4 USDC budget.
+- A production smoke test completed signed wallet authentication, created a
+  hosted task, loaded the 10/4/3 delegation snapshot, and ran the analysis agent
+  through the configured free Groq model. The deterministic route was explicitly
+  labeled because TypeSafe credentials remain absent; no payment tool was called.
 - All ledger tables have RLS enabled; direct `anon` and `authenticated` access
   is revoked. Supabase security and performance advisors reported no issues.
 - Still open: production-grade managed remote signing and confirmed

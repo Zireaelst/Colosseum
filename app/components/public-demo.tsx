@@ -221,9 +221,9 @@ export function DemoModes() {
         </button>
       </div>
       <p className="mode-note">
-        Public Demo works everywhere. Live Devnet currently uses the local,
-        single-process SQLite and merchant setup; durable hosted state remains in
-        the backlog.
+        Public Demo works everywhere. Live Devnet uses hosted Supabase state and
+        the public x402 merchant; a connected wallet must still approve test-USDC
+        funding before a real payment can run.
       </p>
       {mode === "public" ? <PublicDemo /> : <WalletConnect />}
     </div>

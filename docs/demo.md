@@ -26,4 +26,15 @@ The final demo must label each item as one of:
 - **AI fallback:** if `AI_API_KEY` is absent, the manager result is `demo-fallback`, no model request runs, and no purchase is attempted.
 - **Simulated:** any fixture or UI-only event with no live backend/chain evidence.
 
-Current implementation has not yet made a real transfer. It has verified facilitator capability, the devnet mint/ATA path, funding transaction construction, and a live local merchant V2 challenge. Do not present these as a completed x402 payment. The demo becomes “Real x402” only after the funding and paid-request signatures are confirmed and linked in Explorer.
+Current implementation has not yet made a real transfer. It has verified
+facilitator capability, the devnet mint/ATA path, funding transaction
+construction, and a public Railway merchant V2 challenge. Do not present these
+as a completed x402 payment. The demo becomes “Real x402” only after the funding
+and paid-request signatures are confirmed and linked in Explorer.
+
+The hosted path now also verifies signed wallet authentication, Supabase-backed
+task creation and 10/4/3 delegation state, a public Railway x402 challenge, and
+a live analysis-agent response through the configured Groq model. The remaining
+manual gate is a connected-wallet test-USDC funding approval followed by the
+real paid research request. TypeSafe/Jev remains unavailable until its separate
+server credential is configured, so routing is visibly deterministic fallback.

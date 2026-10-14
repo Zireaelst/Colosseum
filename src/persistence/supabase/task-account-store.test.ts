@@ -60,4 +60,22 @@ describe("SupabaseTaskAccountStore", () => {
       store.markFunded(account.id, "signature-2"),
     ).rejects.toThrow("conflicting funding signature");
   });
+
+  it("accepts bigint columns returned as safe JavaScript numbers", async () => {
+    const gateway = new MemoryGateway();
+    const store = new SupabaseTaskAccountStore(gateway, randomBytes(32));
+    const account = await store.create("owner-wallet");
+    const row = gateway.rows.get(account.id);
+    if (!row) throw new Error("Expected task account row");
+
+    gateway.rows.set(account.id, {
+      ...row,
+      allocation_units: 10_000_000 as unknown as string,
+    });
+
+    await expect(store.task(account.id)).resolves.toMatchObject({
+      id: account.id,
+      allocation: "10000000",
+    });
+  });
 });
