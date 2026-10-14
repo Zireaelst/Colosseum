@@ -1,34 +1,25 @@
 "use client";
 
-import { useState } from "react";
-import { getBase58Decoder } from "@solana/kit";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 import {
-  getWalletAccountFeature,
+  sendWalletTransactionBytes,
+  signWalletMessage,
   type UiWallet,
   type UiWalletAccount,
+  walletClient,
+} from "@pactlet/wallet-kit";
+import {
   useConnect,
+  useConnectedWallet,
+  useDisconnect,
+  useIsWalletReady,
   useWallets,
-} from "@wallet-standard/react";
-import { getWalletAccountForUiWalletAccount } from "@wallet-standard/ui-registry";
+} from "@pactlet/wallet-kit/react";
 
 import { TaskDashboard, type AgentRunView } from "./components/task-dashboard";
 import type { TaskSnapshotDto } from "../src/ui/task-view-model";
-
-interface SignMessageFeature {
-  signMessage(...inputs: readonly {
-    account: ReturnType<typeof getWalletAccountForUiWalletAccount>;
-    message: Uint8Array;
-  }[]): Promise<readonly { signature: Uint8Array }[]>;
-}
-
-interface SignAndSendTransactionFeature {
-  signAndSendTransaction(...inputs: readonly {
-    account: ReturnType<typeof getWalletAccountForUiWalletAccount>;
-    chain: "solana:devnet";
-    transaction: Uint8Array;
-    options?: { preflightCommitment?: "confirmed" };
-  }[]): Promise<readonly { signature: Uint8Array }[]>;
-}
+import { walletEmptyState } from "../src/solana/wallet-ui-state";
 
 function bytesToBase64(bytes: Uint8Array): string {
   let binary = "";
@@ -48,13 +39,13 @@ function WalletButton({
   wallet: UiWallet;
   onVerified(account: UiWalletAccount): void;
 }) {
-  const [isConnecting, connect] = useConnect(wallet);
+  const connect = useConnect(walletClient);
   const [error, setError] = useState<string | null>(null);
 
   async function authenticate() {
     setError(null);
     try {
-      const accounts = await connect();
+      const accounts = await connect.dispatchAsync(wallet);
       const account = accounts.find((candidate) =>
         candidate.chains.some((chain) => chain.startsWith("solana:")),
       );
@@ -66,9 +57,6 @@ function WalletButton({
   }
 
   async function proveOwnership(account: UiWalletAccount) {
-    if (!account.features.includes("solana:signMessage")) {
-      throw new Error("Wallet does not support solana:signMessage");
-    }
     const challengeResponse = await fetch("/api/auth/nonce", {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -76,16 +64,9 @@ function WalletButton({
     });
     if (!challengeResponse.ok) throw new Error("Could not create wallet nonce");
     const challenge = (await challengeResponse.json()) as { message: string };
-    const standardAccount = getWalletAccountForUiWalletAccount(account);
-    const feature = getWalletAccountFeature(
-      account,
-      "solana:signMessage",
-    ) as SignMessageFeature;
-    const [signed] = await feature.signMessage({
-      account: standardAccount,
-      message: new TextEncoder().encode(challenge.message),
-    });
-    if (!signed) throw new Error("Wallet returned no signature");
+    const signature = await signWalletMessage(
+      new TextEncoder().encode(challenge.message),
+    );
 
     const verifyResponse = await fetch("/api/auth/verify", {
       method: "POST",
@@ -93,7 +74,7 @@ function WalletButton({
       body: JSON.stringify({
         address: account.address,
         message: challenge.message,
-        signature: bytesToBase64(signed.signature),
+        signature: bytesToBase64(signature),
       }),
     });
     if (!verifyResponse.ok) throw new Error("Wallet signature verification failed");
@@ -102,8 +83,8 @@ function WalletButton({
 
   return (
     <div className="wallet-option">
-      <button disabled={isConnecting} onClick={authenticate} type="button">
-        {isConnecting ? "Connecting…" : `Connect ${wallet.name}`}
+      <button disabled={connect.isRunning} onClick={authenticate} type="button">
+        {connect.isRunning ? "Connecting…" : `Connect ${wallet.name}`}
       </button>
       {error ? <small className="error">{error}</small> : null}
     </div>
@@ -111,9 +92,13 @@ function WalletButton({
 }
 
 export function WalletConnect() {
-  const wallets = useWallets();
+  const wallets = useWallets(walletClient);
+  const connected = useConnectedWallet(walletClient);
+  const disconnect = useDisconnect(walletClient);
+  const isWalletReady = useIsWalletReady(walletClient);
   const [connectedAccount, setConnectedAccount] =
     useState<UiWalletAccount | null>(null);
+  const [userAgent, setUserAgent] = useState("");
   const [taskPurpose, setTaskPurpose] = useState(
     "Research the paid demo source and summarize the finding.",
   );
@@ -141,6 +126,16 @@ export function WalletConnect() {
   } | null>(null);
   const [agentResult, setAgentResult] = useState<AgentRunView | null>(null);
   const [actionPending, setActionPending] = useState(false);
+
+  useEffect(() => {
+    setUserAgent(window.navigator.userAgent);
+  }, []);
+
+  useEffect(() => {
+    if (!connected || connected.account.address !== connectedAccount?.address) {
+      setConnectedAccount(null);
+    }
+  }, [connected, connectedAccount?.address]);
 
   async function refreshTask(taskId: string) {
     const response = await fetch(`/api/tasks/${taskId}`);
@@ -174,9 +169,6 @@ export function WalletConnect() {
     setTaskError(null);
     let submittedSignature: string | null = null;
     try {
-      if (!connectedAccount.features.includes("solana:signAndSendTransaction")) {
-        throw new Error("Wallet does not support solana:signAndSendTransaction");
-      }
       setFundingState("signing");
       const transactionResponse = await fetch(
         `/api/tasks/${task.id}/funding-transaction`,
@@ -184,18 +176,9 @@ export function WalletConnect() {
       );
       if (!transactionResponse.ok) throw new Error("Could not build funding transaction");
       const payload = (await transactionResponse.json()) as { transaction: string };
-      const feature = getWalletAccountFeature(
-        connectedAccount,
-        "solana:signAndSendTransaction",
-      ) as SignAndSendTransactionFeature;
-      const [sent] = await feature.signAndSendTransaction({
-        account: getWalletAccountForUiWalletAccount(connectedAccount),
-        chain: "solana:devnet",
-        transaction: base64ToBytes(payload.transaction),
-        options: { preflightCommitment: "confirmed" },
-      });
-      if (!sent) throw new Error("Wallet returned no transaction signature");
-      const transactionSignature = getBase58Decoder().decode(sent.signature);
+      const transactionSignature = await sendWalletTransactionBytes(
+        base64ToBytes(payload.transaction),
+      );
       submittedSignature = transactionSignature;
       setFundingSignature(transactionSignature);
       setFundingState("confirming");
@@ -256,8 +239,10 @@ export function WalletConnect() {
   if (connectedAccount) {
     return (
       <div className="verified">
-        <strong>Wallet ownership verified</strong>
-        <code>{connectedAccount.address}</code>
+        <div className="wallet-session-row">
+          <div><strong>Wallet ownership verified</strong><code>{connectedAccount.address}</code></div>
+          <button className="secondary" disabled={disconnect.isRunning} onClick={() => disconnect.dispatch()} type="button">Disconnect</button>
+        </div>
         {!task ? (
           <div className="task-setup">
             <label htmlFor="task-purpose">What should this task accomplish?</label>
@@ -289,10 +274,23 @@ export function WalletConnect() {
     );
   }
 
+  if (!isWalletReady) {
+    return <div className="wallet-empty"><strong>Checking for Solana wallets…</strong><p>Restoring a previous Wallet Standard connection if available.</p></div>;
+  }
+
+  const emptyState = walletEmptyState({ userAgent, walletCount: wallets.length });
+
   return (
     <div className="wallet-list">
       {wallets.length === 0 ? (
-        <p>No Wallet Standard wallet detected. Install or unlock a Solana wallet.</p>
+        <div className="wallet-empty">
+          <strong>{emptyState.title}</strong>
+          <p>{emptyState.kind === "mobile" ? "Open this URL inside Phantom or another Solana wallet browser, then connect again." : "Install or unlock a Wallet Standard wallet such as Phantom or Solflare, then refresh this page."}</p>
+          <div className="wallet-recovery-actions">
+            <a className="primary-link" href="https://phantom.com/download" rel="noreferrer" target="_blank">Get Phantom <span>↗</span></a>
+            <Link className="text-link" href="/demo">Try guided demo →</Link>
+          </div>
+        </div>
       ) : (
         wallets.map((wallet) => (
           <WalletButton

@@ -42,11 +42,11 @@
 
 **Files:** `app/solana-provider.tsx`, `src/solana/wallet-ui-state.ts`, `src/solana/wallet-ui-state.test.ts`, `app/layout.tsx`, `app/wallet-connect.tsx`, `app/globals.css`
 
-- [ ] Write failing state tests for detected wallets, missing desktop extension, and mobile recovery.
-- [ ] Add the Kit 8 provider and migrate connect, reconnect, disconnect, message signing, and funding send behavior.
-- [ ] Add “Open in Phantom”, “Install a wallet”, and “Try guided demo” recovery actions.
-- [ ] Preserve nonce verification and pre-signing payer/mint/amount/recipient preview.
-- [ ] Run focused wallet/auth/funding tests, typecheck, and commit.
+- [x] Write failing state tests for detected wallets, missing desktop extension, and mobile recovery.
+- [x] Add the Kit 8 provider and migrate connect, reconnect, disconnect, message signing, and funding send behavior.
+- [x] Add “Open in Phantom”, “Install a wallet”, and “Try guided demo” recovery actions.
+- [x] Preserve nonce verification and pre-signing payer/mint/amount/recipient preview.
+- [x] Run focused wallet/auth/funding tests, typecheck, and commit.
 
 ### Task 4: Product-safe failures and final verification
 

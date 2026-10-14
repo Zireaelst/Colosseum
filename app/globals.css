@@ -114,6 +114,13 @@ footer { display: flex; align-items: center; justify-content: space-between; gap
 .demo-event-list small { margin-top: 4px; }
 
 .wallet-list, .verified, .wallet-option { display: grid; gap: 10px; justify-items: start; width: 100%; }
+.wallet-list { min-height: 150px; align-content: start; }
+.wallet-option button { min-width: 220px; text-align: left; }
+.wallet-empty { display: grid; gap: 8px; width: 100%; padding: 22px; border: 1px dashed #43515a; border-radius: 12px; background: #090e12; }
+.wallet-empty p { max-width: 620px; margin: 0; font-size: .82rem; }
+.wallet-recovery-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin-top: 8px; }
+.wallet-session-row { display: flex; align-items: center; justify-content: space-between; gap: 18px; width: 100%; }
+.wallet-session-row code { display: block; margin-top: 6px; font-size: .7rem; }
 .verified { padding: 18px; border: 1px solid #516336; border-radius: 12px; background: #0b110d; }
 small { display: block; margin-top: 10px; color: #7e8d96; }
 .error { color: var(--danger); }
@@ -190,4 +197,5 @@ dd { min-width: 0; margin: 0; }
   footer { align-items: flex-start; flex-direction: column; }
   dl div, .card dl div { grid-template-columns: 1fr; gap: 4px; }
   .panel-heading, .app-panel-heading { flex-direction: column; }
+  .wallet-session-row { align-items: flex-start; flex-direction: column; }
 }
