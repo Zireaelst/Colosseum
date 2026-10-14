@@ -52,10 +52,10 @@
 
 **Files:** `app/app/error.tsx`, `README.md`, `docs/demo.md`, `docs/roadmap.md`
 
-- [ ] Add a safe application error boundary with retry and `/demo` escape.
-- [ ] Document route separation, supported wallet environments, devnet limits, and unconfirmed payment boundary.
-- [ ] Run full tests, typecheck, build, claim scan, and local route smoke checks.
-- [ ] Commit verified work. Deploy only after a separate deployment decision.
+- [x] Add a safe application error boundary with retry and `/demo` escape.
+- [x] Document route separation, supported wallet environments, devnet limits, and unconfirmed payment boundary.
+- [x] Run full tests, typecheck, build, claim scan, and local route smoke checks.
+- [x] Commit verified work. Deploy only after a separate deployment decision.
 
 ## Self-review
 

@@ -87,9 +87,12 @@ The authenticated task snapshot renders the structured mandate, 10/4/3
 allocation tree, available amounts, service scopes, states, events, rejection
 reasons, purchase references, payment preview, Explorer links, and boolean
 runtime readiness. Cancellation is a server action and new demo runs use
-distinct purchase references. The public deployment now defaults to a
-deterministic browser-only walkthrough of allowed, over-budget, cancelled, and
-post-cancellation decisions; every result is explicitly labeled simulated.
+distinct purchase references. The real wallet-backed product is isolated at
+`/app`; `/demo` is the deterministic browser-only walkthrough of allowed,
+over-budget, cancelled, and post-cancellation decisions, with every result
+explicitly labeled simulated. The browser app uses a devnet-bound current Kit
+wallet plugin package while the x402 payment graph remains on its proven Kit 5
+dependency family.
 
 ## M6 — verification and demo handoff (`in progress`)
 
@@ -99,7 +102,14 @@ Acceptance:
 - `pnpm test`, `pnpm typecheck`, and `pnpm build` pass.
 - README and three-minute demo label every real and simulated component accurately.
 
-Current gate: the Pactlet landing page and `/app` public walkthrough use the provided brand assets, and the complete automated suite, typecheck, and production build are required before each deployment. Remaining critical evidence is one user-approved devnet funding transaction followed by one real x402 settlement and Explorer verification. The live Groq and Jev calls remain credential-gated; local `.env` secrets are intentionally not committed. Durable hosted-live requirements are prioritized as P0–P2 in `docs/superpowers/specs/2026-10-13-public-demo-design.md`.
+Current gate: the Pactlet landing page, real `/app` product, and simulated
+`/demo` walkthrough use the provided brand assets. The complete automated
+suite, typecheck, and production build are required before each deployment.
+Remaining critical evidence is one user-approved devnet funding transaction
+followed by one real x402 settlement and Explorer verification. The live Groq
+and Jev calls remain credential-gated; local `.env` secrets are intentionally
+not committed. Durable hosted-live requirements are prioritized as P0–P2 in
+`docs/superpowers/specs/2026-10-13-public-demo-design.md`.
 
 ### Hosted-live P0 progress
 

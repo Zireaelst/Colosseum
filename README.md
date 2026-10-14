@@ -16,8 +16,9 @@ transaction, 4/3 specialist delegations, fixed x402 merchant, guarded purchase
 service, Jev routing, Agents SDK manager/specialists, and backend-driven
 dashboard. The mandate binds a human purpose, configured service/resource,
 per-purchase limit, expiry, and explicit idempotent `purchaseRef` before signing.
-`/app` also includes a deterministic public walkthrough that works without a
-wallet or server state and labels every result `SIMULATED`. The automated suite,
+The real wallet-backed product lives at `/app`; the deterministic walkthrough
+is isolated at `/demo`, works without a wallet or server state, and labels every
+result `SIMULATED`. The automated suite,
 typecheck, and production build are the release gates. A local merchant smoke
 test returned a real package-generated V2 `exact` challenge. No devnet transfer
 or x402 settlement has been broadcast yet, so onchain acceptance remains
@@ -29,7 +30,7 @@ See [docs/feasibility.md](docs/feasibility.md), [docs/architecture.md](docs/arch
 
 - Node.js 22
 - pnpm 12.4.1 via Corepack
-- A Solana wallet that supports Wallet Standard for the later browser flow
+- A Solana wallet that supports Wallet Standard for the browser flow
 - Devnet SOL for task setup where needed
 - Devnet USDC from Circle's faucet for the later funding/payment flow
 
@@ -87,22 +88,25 @@ Before enabling a paid route, verify the configured facilitator's `/supported` r
 pnpm test
 pnpm typecheck
 pnpm spike:x402
+pnpm spike:wallet
 pnpm build
 pnpm dev
 pnpm merchant
 ```
 
-The marketing landing page is served at `/`; the public walkthrough and
-live-devnet interface are at `/app`. The current public deployment is
+The marketing landing page is served at `/`; the real devnet application is at
+`/app`, and the wallet-free guided simulation is at `/demo`. The current public deployment is
 https://pactlet-colosseum.vercel.app and the fixed demo merchant is
 https://pactlet-merchant-production.up.railway.app/research.
 
-`/app` defaults to **Public Demo**, a browser-only deterministic walkthrough of
-the 10/4/3 delegation, allowed purchase, budget rejection, cancellation, and
-post-cancellation rejection. It creates no signature or transfer. **Live
-Devnet** uses hosted Supabase state and the public Railway merchant when all
-server-only production variables are present; the same flow remains available
-locally with SQLite and the separate merchant process.
+`/demo` is a browser-only deterministic walkthrough of the 10/4/3 delegation,
+allowed purchase, budget rejection, cancellation, and post-cancellation
+rejection. It creates no signature or transfer. `/app` uses Solana's current Kit
+wallet plugin with Wallet Standard discovery, hosted Supabase state, and the
+public Railway merchant when all server-only production variables are present.
+Desktop users need an installed and unlocked compatible wallet. Mobile users
+should open Pactlet inside a Solana wallet browser; browsers that cannot expose
+a wallet receive recovery links instead of a false backend-error message.
 
 Set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` only in server-side local and
 deployment environments. The production runtime fails closed without both;

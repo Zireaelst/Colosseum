@@ -65,7 +65,7 @@ Circle's public faucet lists Solana Devnet and currently offers 20 test USDC per
   pinned devnet network, `exact`, devnet USDC mint, 1,000 base units, and the
   configured recipient. No payment was signed or broadcast by this check.
 - The Agents SDK constructs an OpenAI-compatible Chat Completions model for Groq's free `openai/gpt-oss-20b`; provider creation is locally tested without a network call. Groq documents tool use for this model. A credentialed inference remains unverified until `.env` is filled.
-- `pnpm test` passes 141 policy, ledger, wallet, funding, purchase, transport,
+- `pnpm test` passes 147 policy, ledger, wallet, funding, purchase, transport,
   routing, provider, orchestrator, readiness, deployment-config, and
   dashboard-view-model tests; one credentialed integration test is skipped by
   default.
