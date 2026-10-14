@@ -33,7 +33,7 @@ export default function Home() {
         <div className="nav-links">
           <a href="#product">Product</a>
           <a href="#architecture">Architecture</a>
-          <Link className="nav-cta" href="/app">Launch demo</Link>
+          <Link className="nav-cta" href="/app">Open app</Link>
         </div>
       </nav>
 
@@ -45,7 +45,7 @@ export default function Home() {
           <p>Task-scoped budgets, delegated authority, and policy checks enforced at the exact moment an AI agent attempts an x402 payment.</p>
           <div className="hero-actions">
             <Link className="primary-link" href="/app">Open the MVP <span>↗</span></Link>
-            <a className="text-link" href="#architecture">See how it works ↓</a>
+            <Link className="text-link" href="/demo">Try guided demo →</Link>
           </div>
           <div className="proof-row">
             <span><strong>x402 V2</strong> exact payments</span>
@@ -96,7 +96,7 @@ export default function Home() {
         <span className="eyebrow">Honest trust boundary</span>
         <h2>Solana proves the transfer.<br />Pactlet enforces the policy.</h2>
         <p>This hackathon MVP is custodial, backend-enforced, and devnet-only. It does not claim trustless or onchain-enforced delegation.</p>
-        <Link className="primary-link" href="/app">Run the public demo <span>↗</span></Link>
+        <Link className="primary-link" href="/demo">Run the guided demo <span>↗</span></Link>
       </section>
 
       <footer>

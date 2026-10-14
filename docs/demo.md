@@ -2,9 +2,9 @@
 
 ## Public submission walkthrough
 
-The deployed `/app` defaults to a browser-only walkthrough so judges can inspect the product without a wallet or persistent server session. Run the allowed purchase, over-budget rejection, cancellation, and retry in order. Every generated payment/event is labeled **SIMULATED**, no Explorer link is fabricated, and no transaction is signed or broadcast.
+The deployed `/demo` route is a browser-only walkthrough so judges can inspect the policy flow without a wallet or persistent server session. Run the allowed purchase, over-budget rejection, cancellation, and retry in order. Every generated payment/event is labeled **SIMULATED**, no Explorer link is fabricated, and no transaction is signed or broadcast.
 
-Switch to **Live Devnet** only for the local single-process flow described below. The hosted-live requirements are tracked in the [public demo design and backlog](superpowers/specs/2026-10-13-public-demo-design.md#backlog-for-a-fully-working-hosted-mvp).
+Open `/app` for the real Wallet Standard and devnet flow described below. The hosted-live requirements are tracked in the [public demo design and backlog](superpowers/specs/2026-10-13-public-demo-design.md#backlog-for-a-fully-working-hosted-mvp).
 
 ## Script
 

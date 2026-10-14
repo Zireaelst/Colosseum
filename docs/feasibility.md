@@ -20,6 +20,7 @@ Europe/Istanbul. Live services can change; startup checks remain mandatory.
 | `@solana/kit` | `5.5.1` | Newest 5.x compatible with x402's direct `>=5.1.0` peer and transitive Solana program `^5.0` peers. |
 | `@solana/sysvars` | `5.5.1` | Directly pinned so the token-2022 peer does not auto-resolve to incompatible 8.x. |
 | `@solana-program/token` | `0.9.0` | Matches the x402 SVM dependency line and provides ATA derivation. |
+| `@pactlet/wallet-kit` workspace | Kit `8.5.0`, wallet plugin `0.21.0`, React bindings `8.5.0` | Browser-only package boundary keeps the official wallet plugin separate from the Kit 5 x402 graph. |
 | TypeScript | `5.9.3` | Satisfies Solana Kit 5.x's `^5.0.0` peer. |
 | Next / React | `16.4.0` / `19.3.0` | Current registry versions; Node 22 satisfies Next's engine floor. |
 | OpenAI Agents SDK | `0.20.0` | Current registry version; manager-as-tools pattern matches official orchestration docs. |
@@ -27,6 +28,13 @@ Europe/Istanbul. Live services can change; startup checks remain mandatory.
 | SQLite / Vitest | `better-sqlite3 13.0.3` / `vitest 5.0.4` | Current registry versions; SQLite driver requires Node 22. |
 
 `@solana/kit 8.4.0` was tested and rejected for the payment package: x402 2.28.0 compiled, but pnpm reported incompatible `^5.0` peer requirements from `@solana-program/token`, `token-2022`, and compute-budget packages. The accepted graph installed without peer warnings. A strict TypeScript compile and a runtime construction of x402 client + Express resource server succeeded with x402 2.28.0 and Kit 5.5.1.
+
+On 14 October 2026, moving the root to Kit `8.5.0` reproduced those x402
+transitive peer conflicts, so the mixed graph was rejected. The accepted layout
+keeps payment/funding on Kit `5.5.1` and places Kit `8.5.0`, wallet plugin
+`0.21.0`, and React bindings `8.5.0` in the isolated browser-only
+`@pactlet/wallet-kit` workspace. `pnpm peers check` reported no issues; the
+wallet/funding/x402 co-load spike, focused tests, and strict typecheck passed.
 
 ## x402 and devnet gate
 
@@ -57,7 +65,7 @@ Circle's public faucet lists Solana Devnet and currently offers 20 test USDC per
   pinned devnet network, `exact`, devnet USDC mint, 1,000 base units, and the
   configured recipient. No payment was signed or broadcast by this check.
 - The Agents SDK constructs an OpenAI-compatible Chat Completions model for Groq's free `openai/gpt-oss-20b`; provider creation is locally tested without a network call. Groq documents tool use for this model. A credentialed inference remains unverified until `.env` is filled.
-- `pnpm test` passes 141 policy, ledger, wallet, funding, purchase, transport,
+- `pnpm test` passes 147 policy, ledger, wallet, funding, purchase, transport,
   routing, provider, orchestrator, readiness, deployment-config, and
   dashboard-view-model tests; one credentialed integration test is skipped by
   default.

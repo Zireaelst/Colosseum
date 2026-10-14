@@ -1,4 +1,5 @@
 import { getTransactionDecoder } from "@solana/kit";
+import { decodeWalletTransactionBytes } from "@pactlet/wallet-kit";
 import { describe, expect, test } from "vitest";
 
 import { buildTaskFundingTransaction } from "./funding-transaction";
@@ -23,5 +24,6 @@ describe("buildTaskFundingTransaction", () => {
       destinationAta: task.paymentAta,
     });
     expect(getTransactionDecoder().decode(built.transactionBytes)).toBeDefined();
+    expect(decodeWalletTransactionBytes(built.transactionBytes)).toBeDefined();
   });
 });
