@@ -1,13 +1,12 @@
 "use client";
 
-import { useReducer, useState } from "react";
+import { useReducer } from "react";
 
 import {
   createPublicDemoState,
   reducePublicDemo,
 } from "../../src/demo/public-demo";
 import { unitsToToken } from "../../src/ui/task-view-model";
-import { WalletConnect } from "../wallet-connect";
 
 function shortAmount(value: bigint): string {
   return `${unitsToToken(value.toString())} test USDC`;
@@ -194,38 +193,5 @@ export function PublicDemo() {
         a confirmed Explorer signature exists.
       </p>
     </section>
-  );
-}
-
-export function DemoModes() {
-  const [mode, setMode] = useState<"public" | "live">("public");
-
-  return (
-    <div>
-      <div aria-label="Demo mode" className="mode-switch">
-        <button
-          aria-pressed={mode === "public"}
-          className={mode === "public" ? "active" : "secondary"}
-          onClick={() => setMode("public")}
-          type="button"
-        >
-          Public Demo
-        </button>
-        <button
-          aria-pressed={mode === "live"}
-          className={mode === "live" ? "active" : "secondary"}
-          onClick={() => setMode("live")}
-          type="button"
-        >
-          Live Devnet
-        </button>
-      </div>
-      <p className="mode-note">
-        Public Demo works everywhere. Live Devnet uses hosted Supabase state and
-        the public x402 merchant; a connected wallet must still approve test-USDC
-        funding before a real payment can run.
-      </p>
-      {mode === "public" ? <PublicDemo /> : <WalletConnect />}
-    </div>
   );
 }

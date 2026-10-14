@@ -1,19 +1,26 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
-import { DemoModes } from "../../app/components/public-demo";
+import PactletApp from "../../app/app/page";
+import DemoPage from "../../app/demo/page";
 import Home from "../../app/page";
 
 describe("public demo interface", () => {
-  it("defaults to a clearly labeled simulation and exposes live devnet separately", () => {
-    const html = renderToStaticMarkup(<DemoModes />);
+  it("keeps the product route live-only", () => {
+    const html = renderToStaticMarkup(<PactletApp />);
 
-    expect(html).toContain("Public Demo");
+    expect(html).toContain("Connect your Solana wallet");
+    expect(html).toContain("Devnet only");
+    expect(html).not.toContain("SIMULATED");
+    expect(html).not.toContain("Public Demo");
+  });
+
+  it("keeps the guided demo route simulation-only", () => {
+    const html = renderToStaticMarkup(<DemoPage />);
+
+    expect(html).toContain("Guided product demo");
     expect(html).toContain("SIMULATED");
-    expect(html).toContain("Live Devnet");
-    expect(html).toContain("hosted Supabase state");
-    expect(html).toContain("public x402 merchant");
-    expect(html).not.toContain("single-process");
+    expect(html).not.toContain("Connect your Solana wallet");
     expect(html).not.toContain("explorer.solana.com/tx/");
   });
 

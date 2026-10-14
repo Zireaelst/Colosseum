@@ -27,16 +27,16 @@
 - [x] Reject the peer-incompatible single-root Kit 8 graph.
 - [x] Isolate Kit 8.5.0, wallet plugin 0.21.0, and React bindings 8.5.0 in a browser workspace package while retaining Kit 5.5.1 for x402.
 - [x] Run peer check, spike, strict typecheck, and focused Solana/x402 tests.
-- [ ] Record and commit the proven dependency slice.
+- [x] Record and commit the proven dependency slice.
 
 ### Task 2: Separate product and demo routes
 
 **Files:** `app/demo/page.tsx`, `app/app/page.tsx`, `app/components/public-demo.tsx`, `app/page.tsx`, `src/demo/public-demo-ui.test.tsx`
 
-- [ ] Write failing tests asserting `/app` is live-only and `/demo` is simulation-only.
-- [ ] Run the focused test and observe the expected failure.
-- [ ] Add `/demo`, render `WalletConnect` directly from `/app`, remove `DemoModes`, and add distinct landing links.
-- [ ] Run the focused test and commit the route split.
+- [x] Write failing tests asserting `/app` is live-only and `/demo` is simulation-only.
+- [x] Run the focused test and observe the expected failure.
+- [x] Add `/demo`, render `WalletConnect` directly from `/app`, remove `DemoModes`, and add distinct landing links.
+- [x] Run the focused test and commit the route split.
 
 ### Task 3: Integrate Kit wallet plugin UX
 
