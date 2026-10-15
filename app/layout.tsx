@@ -8,12 +8,19 @@ export const metadata: Metadata = {
     process.env.NEXT_PUBLIC_APP_ORIGIN ?? "http://localhost:3000",
   ),
   title: "Pactlet — Permission before payment",
-  description: "Task-scoped budgets and delegated authority for AI agent payments on Solana devnet.",
+  description: "Task-scoped budgets and backend-enforced delegated authority for AI agent payments on Solana devnet.",
+  keywords: ["AI agents", "x402", "Solana devnet", "delegated authority", "agent payments"],
   openGraph: {
     title: "Pactlet — Let agents pay. You set the limits.",
     description: "Task-scoped authority enforced at the x402 payment boundary.",
     images: [{ url: "/brand/og.png", width: 1200, height: 630 }],
     type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Pactlet — Permission before payment",
+    description: "Task-scoped authority enforced at the x402 payment boundary.",
+    images: ["/brand/og.png"],
   },
 };
 

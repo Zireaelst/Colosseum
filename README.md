@@ -94,8 +94,9 @@ pnpm dev
 pnpm merchant
 ```
 
-The marketing landing page is served at `/`; the real devnet application is at
-`/app`, and the wallet-free guided simulation is at `/demo`. The current public deployment is
+The complete product landing page is served at `/`; concise public quick-start
+documentation is at `/docs`; the real devnet application is at `/app`; and the
+wallet-free guided simulation is at `/demo`. The current public deployment is
 https://pactlet-colosseum.vercel.app and the fixed demo merchant is
 https://pactlet-merchant-production.up.railway.app/research.
 
@@ -107,6 +108,12 @@ public Railway merchant when all server-only production variables are present.
 Desktop users need an installed and unlocked compatible wallet. Mobile users
 should open Pactlet inside a Solana wallet browser; browsers that cannot expose
 a wallet receive recovery links instead of a false backend-error message.
+
+The public frontend shares one responsive navigation and design system across
+all four routes. The landing explains the problem, delegation model, payment
+boundary, and security limits; the live app guides users through Connect,
+Create & fund, and Run & inspect. The documentation lists environment variable
+names only and never exposes deployment values.
 
 Set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` only in server-side local and
 deployment environments. The production runtime fails closed without both;

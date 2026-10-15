@@ -12,3 +12,4 @@ dist/
 !.env.example
 .vercel
 supabase/.temp/
+.DS_Store

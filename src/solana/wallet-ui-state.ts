@@ -5,6 +5,13 @@ export type WalletEmptyState =
 
 const MOBILE_USER_AGENT = /Android|iPad|iPhone|iPod|Mobile/i;
 
+export function shouldRenderWalletLoading(input: {
+  hydrated: boolean;
+  walletReady: boolean;
+}): boolean {
+  return !input.hydrated || !input.walletReady;
+}
+
 export function walletEmptyState(input: {
   userAgent: string;
   walletCount: number;

@@ -20,7 +20,10 @@ import {
 import { TaskDashboard, type AgentRunView } from "./components/task-dashboard";
 import { AppProgress } from "./components/app-progress";
 import type { TaskSnapshotDto } from "../src/ui/task-view-model";
-import { walletEmptyState } from "../src/solana/wallet-ui-state";
+import {
+  shouldRenderWalletLoading,
+  walletEmptyState,
+} from "../src/solana/wallet-ui-state";
 
 function bytesToBase64(bytes: Uint8Array): string {
   let binary = "";
@@ -99,6 +102,7 @@ export function WalletConnect() {
   const isWalletReady = useIsWalletReady(walletClient);
   const [connectedAccount, setConnectedAccount] =
     useState<UiWalletAccount | null>(null);
+  const [hydrated, setHydrated] = useState(false);
   const [userAgent, setUserAgent] = useState("");
   const [taskPurpose, setTaskPurpose] = useState(
     "Research the paid demo source and summarize the finding.",
@@ -129,6 +133,7 @@ export function WalletConnect() {
   const [actionPending, setActionPending] = useState(false);
 
   useEffect(() => {
+    setHydrated(true);
     setUserAgent(window.navigator.userAgent);
   }, []);
 
@@ -238,8 +243,18 @@ export function WalletConnect() {
   }
 
   if (connectedAccount) {
+    const liveStatus = fundingState === "confirmed"
+      ? "Task funding confirmed. The bounded agent can run."
+      : fundingState === "confirming"
+        ? "Funding transaction submitted and awaiting devnet confirmation."
+        : fundingState === "signing"
+          ? "Funding transaction is awaiting wallet approval."
+          : task
+            ? "Task created. Review the funding preview before signing."
+            : "Wallet ownership verified. Create a task to continue.";
     return (
       <div className="verified">
+        <p aria-live="polite" className="sr-only">{liveStatus}</p>
         <AppProgress
           fundingState={fundingState}
           taskCreated={Boolean(task)}
@@ -280,14 +295,17 @@ export function WalletConnect() {
     );
   }
 
-  if (!isWalletReady) {
-    return <div className="wallet-empty"><strong>Checking for Solana wallets…</strong><p>Restoring a previous Wallet Standard connection if available.</p></div>;
+  if (shouldRenderWalletLoading({ hydrated, walletReady: isWalletReady })) {
+    return <div aria-live="polite" className="wallet-empty"><strong>Checking for Solana wallets…</strong><p>Restoring a previous Wallet Standard connection if available.</p></div>;
   }
 
   const emptyState = walletEmptyState({ userAgent, walletCount: wallets.length });
 
   return (
     <div className="wallet-list">
+      <p aria-live="polite" className="sr-only">
+        {wallets.length === 0 ? "No compatible wallet detected." : `${wallets.length} compatible wallet options detected.`}
+      </p>
       <AppProgress
         fundingState="idle"
         taskCreated={false}

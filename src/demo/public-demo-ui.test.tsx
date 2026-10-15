@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import PactletApp from "../../app/app/page";
 import DemoPage from "../../app/demo/page";
+import DocsPage from "../../app/docs/page";
 import AppError from "../../app/app/error";
 import Home from "../../app/page";
 
@@ -47,5 +48,17 @@ describe("public demo interface", () => {
     expect(html).toContain("Try again");
     expect(html).toContain("Open guided demo");
     expect(html).not.toContain("secret backend detail");
+  });
+
+  it("gives every public page a skip link and one primary heading", () => {
+    for (const page of [<Home />, <DocsPage />, <PactletApp />, <DemoPage />]) {
+      const html = renderToStaticMarkup(page);
+      expect(html).toContain("skip-link");
+      expect(html.match(/<h1/g)).toHaveLength(1);
+    }
+  });
+
+  it("announces live application state changes", () => {
+    expect(renderToStaticMarkup(<PactletApp />)).toContain('aria-live="polite"');
   });
 });

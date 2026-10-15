@@ -103,7 +103,10 @@ Acceptance:
 - README and three-minute demo label every real and simulated component accurately.
 
 Current gate: the Pactlet landing page, real `/app` product, and simulated
-`/demo` walkthrough use the provided brand assets. The complete automated
+`/demo` walkthrough use the provided brand assets. The landing now includes the
+problem, product, workflow, payment-boundary, and honest security narrative;
+`/docs` provides a public quick start; and `/app` presents a three-step onboarding
+flow. The complete automated
 suite, typecheck, and production build are required before each deployment.
 Remaining critical evidence is one user-approved devnet funding transaction
 followed by one real x402 settlement and Explorer verification. The live Groq

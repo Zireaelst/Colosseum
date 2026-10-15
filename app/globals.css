@@ -40,6 +40,35 @@ a { color: inherit; text-decoration: none; }
 button, textarea, input { font: inherit; }
 img, svg { display: block; }
 
+html { scroll-padding-top: 84px; }
+:focus-visible { outline: 2px solid var(--lime); outline-offset: 3px; }
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+.skip-link {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  z-index: 1000;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: var(--lime);
+  color: var(--midnight);
+  font-size: .75rem;
+  font-weight: 800;
+  transform: translateY(-160%);
+  transition: transform .15s ease;
+}
+.skip-link:focus { transform: translateY(0); }
+
 /* ── Typography base ── */
 h1, h2, h3, h4 { letter-spacing: -.04em; line-height: 1; color: var(--white); }
 p  { color: var(--muted); line-height: 1.7; }
@@ -1809,4 +1838,14 @@ dd { min-width: 0; margin: 0; font-size: .82rem; }
   .app-progress { grid-template-columns: 1fr; }
   .app-progress li { border-right: 0; border-bottom: 1px solid var(--border); }
   .app-progress li:last-child { border-bottom: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
 }

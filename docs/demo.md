@@ -6,6 +6,10 @@ The deployed `/demo` route is a browser-only walkthrough so judges can inspect t
 
 Open `/app` for the real Wallet Standard and devnet flow described below. The hosted-live requirements are tracked in the [public demo design and backlog](superpowers/specs/2026-10-13-public-demo-design.md#backlog-for-a-fully-working-hosted-mvp).
 
+Use `/docs` as the presenter fallback for the five-step product flow, runtime
+configuration names, and the backend-versus-chain trust boundary. It contains no
+credentials and does not claim that the pending devnet settlement has occurred.
+
 ## Script
 
 - **0:00:** Connect a Solana wallet, sign the nonce, preview funding terms, and create a task with 10 test USDC.
