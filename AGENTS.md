@@ -56,7 +56,11 @@ Use current primary documentation and pin every dependency in `pnpm-lock.yaml`:
 
 Do not combine peer-incompatible versions because examples look similar. Prove important combinations with a small typecheck/runtime spike and document the result in `docs/feasibility.md`.
 
-## Reporting
+## Frontend guidelines
+
+Read `docs/ui-guidelines.md` before frontend changes. It contains the user's supplied interaction, accessibility, motion, layout, and performance rules. Keep application screens focused on tasks and actions; reserve cinematic presentation for the marketing site. Validate mobile, laptop, and wide layouts, keyboard navigation, empty/error/loading states, and reduced motion. Report checks that could not be performed instead of treating the checklist as verified.
+
+## Milestone reporting
 
 For each milestone, report: status, commands run, tests passed/failed, onchain evidence (if any), simulated parts, blockers, and the smallest next step. Never turn an unverified assumption into a completion claim.
 
