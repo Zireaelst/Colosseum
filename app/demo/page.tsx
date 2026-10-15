@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function DemoPage() {
   return (
-    <div className="product-page-shell demo-page-shell">
+    <div className="product-page-shell demo-page-shell" data-theme="pactlet-vesper">
       <a className="skip-link" href="#demo-content">Skip to demo</a>
       <SiteHeader />
       <main className="app-shell" id="demo-content">

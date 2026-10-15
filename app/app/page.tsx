@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function PactletApp() {
   return (
-    <div className="product-page-shell">
+    <div className="product-page-shell" data-theme="pactlet-vesper">
       <a className="skip-link" href="#app-content">Skip to application</a>
       <SiteHeader />
       <main className="app-shell" id="app-content">

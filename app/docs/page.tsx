@@ -41,7 +41,7 @@ const routes = [
 
 export default function DocsPage() {
   return (
-    <div className="product-page-shell docs-page">
+    <div className="product-page-shell docs-page" data-theme="pactlet-vesper">
       <a className="skip-link" href="#docs-content">Skip to documentation</a>
       <SiteHeader />
       <header className="docs-hero">

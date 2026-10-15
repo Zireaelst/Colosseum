@@ -27,7 +27,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body><SolanaProvider>{children}</SolanaProvider></body>
+      <body style={{ background: "#000", color: "#fff" }}><SolanaProvider>{children}</SolanaProvider></body>
     </html>
   );
 }

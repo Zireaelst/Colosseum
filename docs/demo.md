@@ -10,6 +10,11 @@ Use `/docs` as the presenter fallback for the five-step product flow, runtime
 configuration names, and the backend-versus-chain trust boundary. It contains no
 credentials and does not claim that the pending devnet settlement has occurred.
 
+The public interface uses one Pactlet visual system across `/`, `/app`, `/demo`,
+and `/docs`. The landing's decorative background video is not product evidence
+and is never required for the wallet or policy flow; an SVG/gradient fallback is
+always present, and reduced-motion visitors do not receive the animation.
+
 ## Script
 
 - **0:00:** Connect a Solana wallet, sign the nonce, preview funding terms, and create a task with 10 test USDC.

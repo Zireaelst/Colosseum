@@ -115,6 +115,13 @@ boundary, and security limits; the live app guides users through Connect,
 Create & fund, and Run & inspect. The documentation lists environment variable
 names only and never exposes deployment values.
 
+The current visual system combines a cinematic black and metallic layout with
+Pactlet's lime/violet identity. The landing hero uses a decorative, muted remote
+video supplied with the design brief. It is progressive enhancement only: the
+existing Pactlet SVG and black/lime/violet gradients remain visible when video
+loading or motion is unavailable. The app, demo, and docs do not depend on the
+video.
+
 Set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` only in server-side local and
 deployment environments. The production runtime fails closed without both;
 neither value may use a `NEXT_PUBLIC_` prefix.

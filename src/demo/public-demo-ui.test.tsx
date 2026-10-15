@@ -51,6 +51,15 @@ describe("public demo interface", () => {
     expect(html).not.toContain("Vesper");
   });
 
+  it("locks the landing to the Pactlet mixed visual system without fake metrics", () => {
+    const html = renderToStaticMarkup(<Home />);
+
+    expect(html).toContain('data-theme="pactlet-vesper"');
+    expect(html).toContain('preload="metadata"');
+    expect(html).not.toContain("180+");
+    expect(html).not.toContain("92%");
+  });
+
   it("offers safe recovery when the live application fails", () => {
     const html = renderToStaticMarkup(
       <AppError error={new Error("secret backend detail")} reset={() => undefined} />,

@@ -2551,3 +2551,89 @@ button.secondary {
   .app-header h1,
   .docs-hero h1 { font-size: clamp(2.75rem, 13vw, 4.1rem); }
 }
+
+/* Landing narrative continuation */
+.product-landing > main {
+  position: relative;
+  background:
+    radial-gradient(circle at 12% 18%, rgba(200, 255, 87, .045), transparent 24rem),
+    radial-gradient(circle at 88% 52%, rgba(137, 112, 255, .07), transparent 28rem),
+    #000;
+}
+
+.landing-section-heading h2,
+.landing-workflow h2,
+.landing-final-cta h2 {
+  font-weight: 540;
+  letter-spacing: -.06em;
+}
+
+.landing-section-heading h2 em,
+.landing-final-cta h2 em {
+  color: #b8aeff;
+  font-family: "Instrument Serif", Georgia, "Times New Roman", serif;
+  font-size: 1.06em;
+  font-weight: 400;
+  font-style: italic;
+  letter-spacing: -.04em;
+}
+
+.landing-problem-grid {
+  border-color: rgba(255, 255, 255, .1);
+}
+
+.landing-problem-grid article {
+  border-color: rgba(255, 255, 255, .1);
+  background: linear-gradient(150deg, rgba(255, 255, 255, .025), transparent);
+}
+
+.landing-feature-grid > article,
+.landing-security-grid article,
+.landing-security-note,
+.landing-workflow-visual {
+  border-color: rgba(255, 255, 255, .1);
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, .045), rgba(255, 255, 255, .012) 55%, rgba(137, 112, 255, .03)),
+    #070708;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .045);
+}
+
+.landing-feature-grid > article {
+  transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease;
+}
+
+.landing-feature-grid > article:hover {
+  border-color: rgba(200, 255, 87, .2);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06), 0 24px 60px rgba(0, 0, 0, .28);
+  transform: translateY(-4px);
+}
+
+.landing-feature-visual {
+  background: radial-gradient(circle at 70% 22%, rgba(137, 112, 255, .13), transparent 35%), #070708;
+}
+
+.landing-final-cta {
+  border-color: rgba(200, 255, 87, .16);
+  background:
+    radial-gradient(circle at 82% 30%, rgba(137, 112, 255, .18), transparent 34%),
+    radial-gradient(circle at 15% 70%, rgba(200, 255, 87, .12), transparent 34%),
+    linear-gradient(145deg, #09090a, #020203);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .05), 0 30px 90px rgba(0, 0, 0, .35);
+}
+
+@media (min-width: 901px) and (max-height: 760px) {
+  .landing-hero { padding-bottom: 126px; }
+  .landing-hero h1 { font-size: clamp(3rem, 5.6vw, 5.2rem); }
+  .landing-kicker { margin-bottom: 14px; }
+  .landing-hero-copy > p { margin-top: 14px; }
+  .landing-hero .landing-actions { margin-top: 18px; }
+  .landing-hero-facts { bottom: 22px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card:hover,
+  .landing-feature-grid > article:hover,
+  .public-nav > .public-nav-link:hover,
+  .landing-primary-action:hover,
+  .landing-secondary-action:hover { transform: none; }
+}

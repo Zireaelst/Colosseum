@@ -9,7 +9,7 @@ import { SiteHeader } from "./components/site-header";
 
 export default function Home() {
   return (
-    <div className="product-landing">
+    <div className="product-landing" data-theme="pactlet-vesper">
       <a className="skip-link" href="#main-content">Skip to content</a>
       <div className="landing-hero-shell">
         <SiteHeader />
