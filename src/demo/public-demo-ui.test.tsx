@@ -69,6 +69,18 @@ describe("public demo interface", () => {
     }
   });
 
+  it("shares the Pactlet product shell across live, demo, and docs routes", () => {
+    for (const page of [<PactletApp />, <DemoPage />, <DocsPage />]) {
+      const html = renderToStaticMarkup(page);
+      expect(html).toContain("product-page-shell");
+      expect(html).toContain("Pactlet");
+      expect(html).not.toContain("Vesper");
+    }
+
+    expect(renderToStaticMarkup(<DemoPage />)).toContain("SIMULATED");
+    expect(renderToStaticMarkup(<PactletApp />)).toContain("Devnet only");
+  });
+
   it("announces live application state changes", () => {
     expect(renderToStaticMarkup(<PactletApp />)).toContain('aria-live="polite"');
   });
