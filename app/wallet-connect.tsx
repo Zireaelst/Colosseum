@@ -18,6 +18,7 @@ import {
 } from "@pactlet/wallet-kit/react";
 
 import { TaskDashboard, type AgentRunView } from "./components/task-dashboard";
+import { AppProgress } from "./components/app-progress";
 import type { TaskSnapshotDto } from "../src/ui/task-view-model";
 import { walletEmptyState } from "../src/solana/wallet-ui-state";
 
@@ -239,6 +240,11 @@ export function WalletConnect() {
   if (connectedAccount) {
     return (
       <div className="verified">
+        <AppProgress
+          fundingState={fundingState}
+          taskCreated={Boolean(task)}
+          walletVerified
+        />
         <div className="wallet-session-row">
           <div><strong>Wallet ownership verified</strong><code>{connectedAccount.address}</code></div>
           <button className="secondary" disabled={disconnect.isRunning} onClick={() => disconnect.dispatch()} type="button">Disconnect</button>
@@ -282,6 +288,11 @@ export function WalletConnect() {
 
   return (
     <div className="wallet-list">
+      <AppProgress
+        fundingState="idle"
+        taskCreated={false}
+        walletVerified={false}
+      />
       {wallets.length === 0 ? (
         <div className="wallet-empty">
           <strong>{emptyState.title}</strong>

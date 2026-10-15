@@ -12,30 +12,49 @@ function shortAmount(value: bigint): string {
   return `${unitsToToken(value.toString())} test USDC`;
 }
 
+const STEPS = [
+  { id: "allow_purchase",    label: "Allow 0.001 USDC service",  description: "Research agent pays within the allowed service budget." },
+  { id: "reject_over_budget",label: "Attempt 5 USDC overspend",  description: "Policy rejects the request — exceeds delegated budget." },
+  { id: "cancel_research",   label: "Cancel research authority",  description: "Research delegation cancelled by the task owner." },
+  { id: "reject_after_cancel",label: "Retry after cancellation", description: "Any purchase attempt is rejected due to cancellation." },
+] as const;
+
+type StepId = (typeof STEPS)[number]["id"];
+
 export function PublicDemo() {
   const [state, dispatch] = useReducer(
     reducePublicDemo,
     undefined,
     createPublicDemoState,
   );
-  const research = state.delegations.find(
-    (delegation) => delegation.id === "research",
-  );
-  const hasAllowed = state.payments.some(
-    (payment) => payment.id === "demo-allowed",
-  );
-  const hasOverBudget = state.payments.some(
-    (payment) => payment.id === "demo-over-budget",
-  );
-  const isCancelled = research?.status === "cancelled";
-  const hasPostCancel = state.payments.some(
-    (payment) => payment.id === "demo-after-cancel",
-  );
+
+  const research = state.delegations.find((d) => d.id === "research");
+  const hasAllowed    = state.payments.some((p) => p.id === "demo-allowed");
+  const hasOverBudget = state.payments.some((p) => p.id === "demo-over-budget");
+  const isCancelled   = research?.status === "cancelled";
+  const hasPostCancel = state.payments.some((p) => p.id === "demo-after-cancel");
+
+  // Completed step count for dots
+  const completedCount =
+    (hasAllowed ? 1 : 0) +
+    (hasOverBudget ? 1 : 0) +
+    (isCancelled ? 1 : 0) +
+    (hasPostCancel ? 1 : 0);
+
+  const isStepEnabled = (id: StepId): boolean => {
+    switch (id) {
+      case "allow_purchase":     return !hasAllowed && !isCancelled;
+      case "reject_over_budget": return hasAllowed && !hasOverBudget;
+      case "cancel_research":    return hasOverBudget && !isCancelled;
+      case "reject_after_cancel":return isCancelled && !hasPostCancel;
+    }
+  };
 
   return (
     <section aria-label="Simulated policy walkthrough" className="public-demo">
+      {/* Banner */}
       <div className="simulation-banner">
-        <span className="status-pill warning">SIMULATED</span>
+        <span className="status-pill warning">Simulated</span>
         <div>
           <strong>Browser-only product walkthrough</strong>
           <p>
@@ -45,6 +64,7 @@ export function PublicDemo() {
         </div>
       </div>
 
+      {/* Stats */}
       <div className="demo-summary">
         <article>
           <span>Task budget</span>
@@ -60,7 +80,9 @@ export function PublicDemo() {
         </article>
       </div>
 
+      {/* Main grid */}
       <div className="card-grid">
+        {/* Delegation graph */}
         <article className="card">
           <div className="panel-heading">
             <div>
@@ -93,7 +115,8 @@ export function PublicDemo() {
                       <i style={{ width: `${ratio}%` }} />
                     </div>
                     <small>
-                      {shortAmount(delegation.available)} available / {shortAmount(delegation.allocation)} allocated
+                      {shortAmount(delegation.available)} available /{" "}
+                      {shortAmount(delegation.allocation)} allocated
                     </small>
                     <code>{delegation.services.join(" · ")}</code>
                   </div>
@@ -103,58 +126,64 @@ export function PublicDemo() {
           </div>
         </article>
 
+        {/* Guided walkthrough */}
         <article className="card demo-actions-card">
           <span className="eyebrow">Guided walkthrough</span>
           <h3>Permission before payment</h3>
-          <p>Run the same sequence used in the three-minute product demo.</p>
+          <p>Run the same four-step sequence used in the product demo.</p>
+
+          {/* Step progress dots */}
+          <div className="step-dots" aria-label="Progress">
+            {STEPS.map((step, i) => {
+              const done = i < completedCount;
+              const current = i === completedCount && completedCount < STEPS.length;
+              return (
+                <div
+                  className={`step-dot ${done ? "done" : ""} ${current ? "current" : ""}`}
+                  key={step.id}
+                  title={step.label}
+                />
+              );
+            })}
+          </div>
+
           <div className="demo-action-list">
-            <button
-              disabled={hasAllowed || isCancelled}
-              onClick={() => dispatch({ type: "allow_purchase" })}
-              type="button"
-            >
-              1. Allow 0.001 USDC service
-            </button>
-            <button
-              className="secondary"
-              disabled={!hasAllowed || hasOverBudget}
-              onClick={() => dispatch({ type: "reject_over_budget" })}
-              type="button"
-            >
-              2. Attempt 5 USDC overspend
-            </button>
-            <button
-              className="secondary"
-              disabled={!hasOverBudget || isCancelled}
-              onClick={() => dispatch({ type: "cancel_research" })}
-              type="button"
-            >
-              3. Cancel research authority
-            </button>
-            <button
-              className="secondary"
-              disabled={!isCancelled || hasPostCancel}
-              onClick={() => dispatch({ type: "reject_after_cancel" })}
-              type="button"
-            >
-              4. Retry after cancellation
-            </button>
+            {STEPS.map((step, i) => {
+              const enabled = isStepEnabled(step.id);
+              const done = i < completedCount;
+              return (
+                <button
+                  className={i === 0 ? undefined : "secondary"}
+                  disabled={!enabled && !done}
+                  key={step.id}
+                  onClick={() => enabled && dispatch({ type: step.id })}
+                  style={{ opacity: done ? 0.45 : undefined, cursor: done ? "default" : undefined }}
+                  type="button"
+                >
+                  <span style={{ minWidth: "1.2em", opacity: done ? 1 : 0.6 }}>
+                    {done ? "✓" : `${i + 1}.`}
+                  </span>
+                  {step.label}
+                </button>
+              );
+            })}
           </div>
           <button
             className="reset-button"
             onClick={() => dispatch({ type: "reset" })}
             type="button"
           >
-            Reset walkthrough
+            ↺ Reset walkthrough
           </button>
         </article>
       </div>
 
+      {/* Results grid */}
       <div className="card-grid">
         <article className="card activity-card">
           <h3>Payment decisions</h3>
           {state.payments.length === 0 ? (
-            <p className="empty">Run the first action to see a policy decision.</p>
+            <p className="empty">Run step 1 to see a policy decision.</p>
           ) : (
             state.payments.map((payment) => (
               <div className="activity-row" key={payment.id}>
@@ -167,7 +196,7 @@ export function PublicDemo() {
                     SIMULATED · {payment.state.toUpperCase()}
                     {payment.rejectionCode ? ` · ${payment.rejectionCode}` : ""}
                   </small>
-                  <small>No transaction was signed or broadcast.</small>
+                  <small style={{ opacity: .6 }}>No transaction was signed or broadcast.</small>
                 </div>
               </div>
             ))
@@ -183,6 +212,9 @@ export function PublicDemo() {
                 <small>{event.detail}</small>
               </div>
             ))}
+            {state.events.length === 0 && (
+              <p className="empty">Events will appear here as you progress.</p>
+            )}
           </div>
         </article>
       </div>

@@ -1752,3 +1752,61 @@ dd { min-width: 0; margin: 0; font-size: .82rem; }
   .docs-route-list p { grid-column: 1 / -1; }
   .docs-actions { display: grid; }
 }
+
+/* ─────────────────────────────────────────
+   LIVE APP ONBOARDING
+───────────────────────────────────────── */
+.product-page-shell {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 76% 8%, rgba(137, 112, 255, .08), transparent 28rem),
+    radial-gradient(circle at 12% 30%, rgba(200, 255, 87, .045), transparent 24rem),
+    var(--midnight);
+}
+.app-progress {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  width: 100%;
+  margin: 0 0 24px;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, .18);
+  list-style: none;
+}
+.app-progress li {
+  position: relative;
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 15px;
+  border-right: 1px solid var(--border);
+  opacity: .48;
+}
+.app-progress li:last-child { border-right: 0; }
+.app-progress li > span {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid rgba(255, 255, 255, .15);
+  border-radius: 50%;
+  color: var(--muted);
+  font: 700 .65rem/1 'IBM Plex Mono', monospace;
+}
+.app-progress li strong { display: block; font-size: .75rem; }
+.app-progress li small { margin: 3px 0 0; font-size: .62rem; }
+.app-progress li.active,
+.app-progress li.complete { opacity: 1; }
+.app-progress li.active { background: rgba(200, 255, 87, .035); }
+.app-progress li.active > span { border-color: var(--lime); background: var(--lime); color: var(--midnight); box-shadow: 0 0 14px rgba(200, 255, 87, .2); }
+.app-progress li.complete > span { border-color: rgba(200, 255, 87, .3); color: var(--lime); }
+
+@media (max-width: 700px) {
+  .app-progress { grid-template-columns: 1fr; }
+  .app-progress li { border-right: 0; border-bottom: 1px solid var(--border); }
+  .app-progress li:last-child { border-bottom: 0; }
+}

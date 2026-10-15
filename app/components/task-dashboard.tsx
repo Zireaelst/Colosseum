@@ -41,12 +41,13 @@ const defaultPrompt = "Research the paid demo source and summarize the finding."
 
 export function TaskDashboard(props: TaskDashboardProps) {
   const [prompt, setPrompt] = useState(defaultPrompt);
-  const view = useMemo(() => toTaskViewModel(props.snapshot), [props.snapshot]);
+  const view    = useMemo(() => toTaskViewModel(props.snapshot), [props.snapshot]);
   const readiness = Object.entries(props.snapshot.readiness);
-  const funded = props.fundingState === "confirmed";
+  const funded  = props.fundingState === "confirmed";
 
   return (
     <div className="dashboard">
+      {/* ── Header row ── */}
       <div className="panel-heading">
         <div>
           <span className="eyebrow">Live task control</span>
@@ -57,15 +58,19 @@ export function TaskDashboard(props: TaskDashboardProps) {
         </span>
       </div>
 
+      {/* ── Runtime readiness chips ── */}
       <div className="readiness" aria-label="Runtime readiness">
         {readiness.map(([name, ready]) => (
           <span className={`readiness-chip ${ready ? "ready" : "missing"}`} key={name}>
-            <i /> {name} {ready ? "ready" : "not configured"}
+            <i />
+            {name} {ready ? "ready" : "not configured"}
           </span>
         ))}
       </div>
 
+      {/* ── Row 1: Funding + Delegation ── */}
       <div className="card-grid">
+        {/* Funding card */}
         <article className="card task-card">
           <h3>Funding preview</h3>
           <dl>
@@ -79,6 +84,7 @@ export function TaskDashboard(props: TaskDashboardProps) {
             <div><dt>Recipient ATA</dt><dd><code>{props.task.paymentAta}</code></dd></div>
             <div><dt>Mint</dt><dd><code>{props.task.mint}</code></dd></div>
           </dl>
+
           {!funded ? (
             <button
               disabled={props.fundingState !== "idle"}
@@ -92,47 +98,91 @@ export function TaskDashboard(props: TaskDashboardProps) {
                   : "Confirming on devnet…"}
             </button>
           ) : null}
+
           {props.fundingSignature ? (
-            <a className="explorer-link" href={`https://explorer.solana.com/tx/${props.fundingSignature}?cluster=devnet`} rel="noreferrer" target="_blank">
+            <a
+              className="explorer-link"
+              href={`https://explorer.solana.com/tx/${props.fundingSignature}?cluster=devnet`}
+              rel="noreferrer"
+              target="_blank"
+            >
               {funded ? "View confirmed funding ↗" : "View pending funding ↗"}
             </a>
           ) : null}
         </article>
 
+        {/* Delegation tree */}
         <article className="card">
           <h3>Delegation tree</h3>
           <div className="delegation-tree">
-            {view.delegations.map((delegation) => (
-              <div className={`delegation depth-${delegation.depth}`} key={delegation.id}>
-                <span className="node-line" />
-                <div>
-                  <div className="node-title">
-                    <strong>{delegation.name}</strong>
-                    <span className={`status-pill ${delegation.status === "active" ? "success" : "danger"}`}>{delegation.status}</span>
+            {view.delegations.map((delegation) => {
+              const pct = Math.min(
+                100,
+                Number(delegation.available) / Number(delegation.allocation) * 100,
+              );
+              return (
+                <div className={`delegation depth-${delegation.depth}`} key={delegation.id}>
+                  <span className="node-line" />
+                  <div>
+                    <div className="node-title">
+                      <strong>{delegation.name}</strong>
+                      <span className={`status-pill ${delegation.status === "active" ? "success" : "danger"}`}>
+                        {delegation.status}
+                      </span>
+                    </div>
+                    <div className="budget-meter">
+                      <i style={{ width: `${pct}%` }} />
+                    </div>
+                    <small>
+                      {delegation.available} / {delegation.allocation} test USDC
+                      {" · "}
+                      {delegation.services.join(", ")}
+                    </small>
                   </div>
-                  <div className="budget-meter"><i style={{ width: `${Math.min(100, Number(delegation.available) / Number(delegation.allocation) * 100)}%` }} /></div>
-                  <small>{delegation.available} / {delegation.allocation} test USDC · {delegation.services.join(", ")}</small>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </article>
       </div>
 
+      {/* ── Row 2: Agent console + Activity ── */}
       <div className="card-grid">
+        {/* Agent console */}
         <article className="card agent-console">
           <div className="panel-heading">
-            <div><span className="eyebrow">Manager</span><h3>Run bounded agent</h3></div>
+            <div>
+              <span className="eyebrow">Manager</span>
+              <h3>Run bounded agent</h3>
+            </div>
             <span className="status-pill">Groq free</span>
           </div>
-          <textarea maxLength={2000} onChange={(event) => setPrompt(event.target.value)} rows={4} value={prompt} />
+          <textarea
+            maxLength={2000}
+            onChange={(e) => setPrompt(e.target.value)}
+            rows={4}
+            value={prompt}
+          />
           <div className="actions">
-            <button disabled={!funded || props.actionPending || !prompt.trim()} onClick={() => props.onRun(prompt)} type="button">
+            <button
+              disabled={!funded || props.actionPending || !prompt.trim()}
+              onClick={() => props.onRun(prompt)}
+              type="button"
+            >
               {props.actionPending ? "Running…" : "Route & run"}
             </button>
-            <button className="secondary" disabled={props.actionPending} onClick={props.onCancel} type="button">Cancel research authority</button>
+            <button
+              className="secondary"
+              disabled={props.actionPending}
+              onClick={props.onCancel}
+              type="button"
+            >
+              Cancel research authority
+            </button>
           </div>
-          {!funded ? <small>Fund the task before an agent can request a paid service.</small> : null}
+          {!funded ? (
+            <small>Fund the task before an agent can request a paid service.</small>
+          ) : null}
           {props.agentResult ? (
             <div className="agent-result">
               <div className="run-meta">
@@ -145,6 +195,7 @@ export function TaskDashboard(props: TaskDashboardProps) {
           ) : null}
         </article>
 
+        {/* Activity + payments */}
         <article className="card activity-card">
           <h3>Payments & policy events</h3>
           {props.snapshot.merchantPreview ? (
@@ -154,24 +205,37 @@ export function TaskDashboard(props: TaskDashboardProps) {
               <code>{props.snapshot.merchantPreview.serviceId} / {props.snapshot.merchantPreview.resourceId}</code>
               <code>{props.snapshot.merchantPreview.mint} → {props.snapshot.merchantPreview.payTo}</code>
             </div>
-          ) : <p className="empty">Merchant is not configured yet.</p>}
-          {view.payments.length ? view.payments.map((payment) => (
-            <div className="activity-row" key={payment.id}>
-              <i className={payment.tone} />
-              <div>
-                <strong>{payment.serviceId} / {payment.resourceId} · {payment.amount} test USDC</strong>
-                <small>{payment.label} · ref {payment.purchaseRef}</small>
-                {payment.explorerUrl ? <a href={payment.explorerUrl} rel="noreferrer" target="_blank">Explorer ↗</a> : null}
+          ) : (
+            <p className="empty">Merchant is not configured yet.</p>
+          )}
+
+          {view.payments.length
+            ? view.payments.map((payment) => (
+              <div className="activity-row" key={payment.id}>
+                <i className={payment.tone} />
+                <div>
+                  <strong>{payment.serviceId} / {payment.resourceId} · {payment.amount} test USDC</strong>
+                  <small>{payment.label} · ref {payment.purchaseRef}</small>
+                  {payment.explorerUrl
+                    ? <a href={payment.explorerUrl} rel="noreferrer" target="_blank">Explorer ↗</a>
+                    : null}
+                </div>
               </div>
-            </div>
-          )) : <p className="empty">No payment attempt yet.</p>}
+            ))
+            : <p className="empty">No payment attempt yet.</p>}
+
           <div className="event-list">
-            {view.events.slice(-6).reverse().map((event) => <code key={event.id}>{event.eventType}</code>)}
+            {view.events.slice(-6).reverse().map((event) => (
+              <code key={event.id}>{event.eventType}</code>
+            ))}
           </div>
         </article>
       </div>
 
-      <p className="trust-note">Devnet proves token transfer and transaction signature. Delegation, service allowlists, expiry and cancellation are enforced by this trusted backend.</p>
+      <p className="trust-note">
+        Devnet proves token transfer and transaction signature. Delegation, service allowlists,
+        expiry, and cancellation are enforced by this trusted backend.
+      </p>
     </div>
   );
 }
