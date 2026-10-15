@@ -39,7 +39,7 @@ export function SiteHeader() {
           id="public-navigation"
         >
           {PUBLIC_NAV_ITEMS.map((item) => (
-            <Link href={item.href} key={item.href} onClick={() => setOpen(false)}>
+            <Link className="public-nav-link" href={item.href} key={item.href} onClick={() => setOpen(false)}>
               {item.label}
             </Link>
           ))}

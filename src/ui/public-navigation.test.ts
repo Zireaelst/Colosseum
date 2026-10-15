@@ -1,5 +1,8 @@
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
+import { SiteHeader } from "../../app/components/site-header";
 import { LANDING_SECTION_IDS, PUBLIC_NAV_ITEMS } from "./public-navigation";
 
 describe("public navigation", () => {
@@ -11,5 +14,14 @@ describe("public navigation", () => {
         expect(["/docs", "/demo", "/app"]).toContain(item.href);
       }
     }
+  });
+
+  it("renders Pactlet's shared metallic navigation contract", () => {
+    const html = renderToStaticMarkup(createElement(SiteHeader));
+
+    expect(html).toContain("Pactlet");
+    expect(html).toContain("public-nav-link");
+    expect(html).toContain("public-header-cta");
+    expect(html).not.toContain("Vesper");
   });
 });
