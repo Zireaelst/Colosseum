@@ -1,26 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
+import { HeroVideo } from "./hero-video";
 
 export function Hero() {
   return (
     <section className="landing-hero" aria-labelledby="landing-title">
       <Image alt="" aria-hidden="true" className="landing-hero-background" fill priority sizes="100vw" src="/brand/hero-background.svg" />
-      <video
-        aria-hidden="true"
-        autoPlay
-        className="landing-hero-video"
-        loop
-        muted
-        playsInline
-        poster="/brand/hero-background.svg"
-        preload="metadata"
-        tabIndex={-1}
-      >
-        <source
-          src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260818_072341_50851634-bbc3-4c33-9acc-7647d4db44aa.mp4"
-          type="video/mp4"
-        />
-      </video>
+      <HeroVideo />
       <div className="landing-hero-veil" aria-hidden="true" />
       <div className="landing-hero-copy">
         <span className="landing-kicker"><i /> Task-scoped payment authority</span>

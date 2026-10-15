@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   sendWalletTransactionBytes,
   signWalletMessage,
@@ -45,8 +45,11 @@ function WalletButton({
 }) {
   const connect = useConnect(walletClient);
   const [error, setError] = useState<string | null>(null);
+  const [authenticating, setAuthenticating] = useState(false);
 
   async function authenticate() {
+    if (authenticating) return;
+    setAuthenticating(true);
     setError(null);
     try {
       const accounts = await connect.dispatchAsync(wallet);
@@ -57,6 +60,8 @@ function WalletButton({
       await proveOwnership(account);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Wallet connection failed");
+    } finally {
+      setAuthenticating(false);
     }
   }
 
@@ -87,10 +92,10 @@ function WalletButton({
 
   return (
     <div className="wallet-option">
-      <button disabled={connect.isRunning} onClick={authenticate} type="button">
-        {connect.isRunning ? "Connecting…" : `Connect ${wallet.name}`}
+      <button aria-busy={authenticating} disabled={authenticating} onClick={authenticate} type="button">
+        {`Connect ${wallet.name}`}
       </button>
-      {error ? <small className="error">{error}</small> : null}
+      {error ? <small aria-live="polite" className="error">{error}</small> : null}
     </div>
   );
 }
@@ -131,6 +136,9 @@ export function WalletConnect() {
   } | null>(null);
   const [agentResult, setAgentResult] = useState<AgentRunView | null>(null);
   const [actionPending, setActionPending] = useState(false);
+  const [creatingTask, setCreatingTask] = useState(false);
+  const [purposeError, setPurposeError] = useState<string | null>(null);
+  const purposeInput = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     setHydrated(true);
@@ -149,25 +157,37 @@ export function WalletConnect() {
   }
 
   async function createTask() {
-    setTaskError(null);
-    const response = await fetch("/api/tasks", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        purpose: taskPurpose,
-        serviceId: "research-api",
-        resourceId: "research-brief",
-        maxAmountBaseUnits: "1000",
-        durationMinutes: 45,
-      }),
-    });
-    if (!response.ok) {
-      setTaskError("Could not create the disposable task account");
+    if (creatingTask) return;
+    const purpose = taskPurpose.trim();
+    if (purpose.length < 3) {
+      setPurposeError("Describe your task in at least 3 characters.");
+      purposeInput.current?.focus();
       return;
     }
-    const created = await response.json();
-    setTask(created);
-    await refreshTask(created.id);
+    setPurposeError(null);
+    setCreatingTask(true);
+    setTaskError(null);
+    try {
+      const response = await fetch("/api/tasks", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          purpose,
+          serviceId: "research-api",
+          resourceId: "research-brief",
+          maxAmountBaseUnits: "1000",
+          durationMinutes: 45,
+        }),
+      });
+      if (!response.ok) throw new Error("Could not create the task. Please try again.");
+      const created = await response.json();
+      setTask(created);
+      await refreshTask(created.id);
+    } catch {
+      setTaskError("Could not create the task. Check your connection and try again.");
+    } finally {
+      setCreatingTask(false);
+    }
   }
 
   async function fundTask() {
@@ -235,11 +255,15 @@ export function WalletConnect() {
 
   async function cancelResearch() {
     if (!task) return;
+    if (!window.confirm("Cancel research authority? New research purchases will be blocked. Already submitted payments cannot be reversed.")) return;
     setActionPending(true);
-    const response = await fetch(`/api/tasks/${task.id}/cancel`, { method: "POST" });
-    if (!response.ok) setTaskError("Research delegation is already cancelled");
-    await refreshTask(task.id);
-    setActionPending(false);
+    try {
+      const response = await fetch(`/api/tasks/${task.id}/cancel`, { method: "POST" });
+      if (!response.ok) throw new Error("Could not cancel research authority.");
+      await refreshTask(task.id);
+    } catch {
+      setTaskError("Could not cancel research authority. Refresh the task before trying again.");
+    } finally { setActionPending(false); }
   }
 
   if (connectedAccount) {
@@ -265,18 +289,25 @@ export function WalletConnect() {
           <button className="secondary" disabled={disconnect.isRunning} onClick={() => disconnect.dispatch()} type="button">Disconnect</button>
         </div>
         {!task ? (
-          <div className="task-setup">
+          <form className="task-setup" noValidate onSubmit={(event) => { event.preventDefault(); void createTask(); }}>
             <label htmlFor="task-purpose">What should this task accomplish?</label>
             <textarea
+              ref={purposeInput}
               id="task-purpose"
+              name="purpose"
+              autoComplete="off"
+              aria-invalid={Boolean(purposeError)}
+              aria-describedby={purposeError ? "task-purpose-help task-purpose-error" : "task-purpose-help"}
               maxLength={240}
               onChange={(event) => setTaskPurpose(event.target.value)}
+              onKeyDown={(event) => { if ((event.metaKey || event.ctrlKey) && event.key === "Enter") { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }}
               rows={3}
               value={taskPurpose}
             />
-            <small>Allowed product: paid research brief · max 0.001 test USDC per purchase · expires in 45 minutes.</small>
-            <button disabled={taskPurpose.trim().length < 3} onClick={createTask} type="button">Create 10 test-USDC task</button>
-          </div>
+            <small id="task-purpose-help">Paid research brief · 0.001 test USDC per purchase · 45-minute window.</small>
+            {purposeError ? <span aria-live="polite" className="task-field-error" id="task-purpose-error">{purposeError}</span> : null}
+            <button aria-busy={creatingTask} disabled={creatingTask} type="submit">Create 10 test-USDC task</button>
+          </form>
         ) : null}
         {task && snapshot ? <TaskDashboard
           actionPending={actionPending}
@@ -290,7 +321,7 @@ export function WalletConnect() {
           snapshot={snapshot}
           task={task}
         /> : null}
-        {taskError ? <small className="error">{taskError}</small> : null}
+        {taskError ? <small aria-live="polite" className="error">{taskError}</small> : null}
       </div>
     );
   }

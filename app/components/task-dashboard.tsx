@@ -87,6 +87,7 @@ export function TaskDashboard(props: TaskDashboardProps) {
 
           {!funded ? (
             <button
+              aria-busy={props.fundingState === "signing" || props.fundingState === "confirming"}
               disabled={props.fundingState !== "idle"}
               onClick={props.onFund}
               type="button"
@@ -158,18 +159,22 @@ export function TaskDashboard(props: TaskDashboardProps) {
             <span className="status-pill">Groq free</span>
           </div>
           <textarea
+            aria-label="Agent instructions"
+            name="agentPrompt"
             maxLength={2000}
             onChange={(e) => setPrompt(e.target.value)}
+            onKeyDown={(event) => { if ((event.metaKey || event.ctrlKey) && event.key === "Enter" && funded && !props.actionPending && prompt.trim()) { event.preventDefault(); props.onRun(prompt.trim()); } }}
             rows={4}
             value={prompt}
           />
           <div className="actions">
             <button
+              aria-busy={props.actionPending}
               disabled={!funded || props.actionPending || !prompt.trim()}
               onClick={() => props.onRun(prompt)}
               type="button"
             >
-              {props.actionPending ? "Running…" : "Route & run"}
+              Route & run
             </button>
             <button
               className="secondary"

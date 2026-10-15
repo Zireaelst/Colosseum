@@ -8,6 +8,12 @@ import AppError from "../../app/app/error";
 import Home from "../../app/page";
 
 describe("public demo interface", () => {
+  it("gives users a workspace and a way to stop decorative motion", () => {
+    const app = renderToStaticMarkup(<PactletApp />);
+    expect(app).toContain('aria-label="Workspace navigation"');
+    expect(app).toContain("Create your first task");
+    expect(renderToStaticMarkup(<Home />)).toContain("Pause background video");
+  });
   it("keeps the product route live-only", () => {
     const html = renderToStaticMarkup(<PactletApp />);
 
