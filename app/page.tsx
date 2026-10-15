@@ -1,5 +1,6 @@
 import { FinalCta } from "./components/landing/final-cta";
 import { Hero } from "./components/landing/hero";
+import { AuthorityPreview } from "./components/landing/authority-preview";
 import { HowItWorksSection } from "./components/landing/how-it-works-section";
 import { ProblemSection } from "./components/landing/problem-section";
 import { ProductSection } from "./components/landing/product-section";
@@ -16,6 +17,7 @@ export default function Home() {
         <Hero />
       </div>
       <main id="main-content">
+        <AuthorityPreview />
         <ProblemSection />
         <ProductSection />
         <HowItWorksSection />

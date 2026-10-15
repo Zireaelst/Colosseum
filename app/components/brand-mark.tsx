@@ -13,7 +13,7 @@ export function BrandMark({ href = "/" }: { href?: string }) {
           strokeWidth="20"
         />
       </svg>
-      <span>Pactlet</span>
+      <span translate="no">Pactlet</span>
     </Link>
   );
 }

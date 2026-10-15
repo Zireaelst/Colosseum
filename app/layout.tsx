@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import "./globals.css";
+import "./product.css";
 import { SolanaProvider } from "./solana-provider";
 
 export const metadata: Metadata = {
