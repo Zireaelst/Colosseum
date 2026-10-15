@@ -25,8 +25,18 @@ describe("public demo interface", () => {
     expect(html).not.toContain("explorer.solana.com/tx/");
   });
 
-  it("keeps the landing-page verification count current", () => {
-    expect(renderToStaticMarkup(<Home />)).toContain("140+ tests");
+  it("renders a complete product story with working anchors", () => {
+    const html = renderToStaticMarkup(<Home />);
+
+    for (const id of ["product", "how-it-works", "security"]) {
+      expect(html).toContain(`id="${id}"`);
+    }
+    expect(html).toContain('href="/app"');
+    expect(html).toContain('href="/demo"');
+    expect(html).toContain('href="/docs"');
+    expect(html).toContain("trusted backend");
+    expect(html).not.toContain("140+ tests");
+    expect(html).not.toContain("cloudfront.net");
   });
 
   it("offers safe recovery when the live application fails", () => {
