@@ -8,5 +8,5 @@ node_modules/
 .next/
 coverage/
 Pactlet_Brand_Assets/
-docs/
+/docs/
 tsconfig.tsbuildinfo
