@@ -37,7 +37,18 @@ describe("public demo interface", () => {
     expect(html).toContain('href="/docs"');
     expect(html).toContain("trusted backend");
     expect(html).not.toContain("140+ tests");
-    expect(html).not.toContain("cloudfront.net");
+  });
+
+  it("renders the Pactlet cinematic hero with an honest video fallback", () => {
+    const html = renderToStaticMarkup(<Home />);
+
+    expect(html).toContain("<video");
+    expect(html).toContain("hf_20260818_072341_50851634-bbc3-4c33-9acc-7647d4db44aa.mp4");
+    expect(html).toContain('poster="/brand/hero-background.svg"');
+    expect(html).toContain('preload="metadata"');
+    expect(html).toContain("Pre-signature policy");
+    expect(html).toContain("Solana devnet receipts");
+    expect(html).not.toContain("Vesper");
   });
 
   it("offers safe recovery when the live application fails", () => {
