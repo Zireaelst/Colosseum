@@ -134,6 +134,31 @@ stays unavailable until funding is confirmed.
 
 ## Limitations
 
+### Workspace continuity
+
+After wallet verification, the app lists your saved tasks in pages of 20.
+Open a task to restore its ledger snapshot; the task URL survives refresh and
+supports browser Back/Forward. A valid server session can be restored when the
+same wallet reconnects. Sessions still expire after thirty minutes.
+
+For a submitted funding transfer, **Refresh status** checks confirmation without
+creating another transfer. HTTP 202 remains pending. A public submitted signature
+is kept locally as a recovery hint until the server confirms it; browser storage
+does not authorize a payment or establish confirmation. Clearing that storage
+before confirmation removes this browser's pending-signature hint.
+
+The dashboard exports public task/payment records as JSON and summarizes settled
+spend, pending reservations, and remaining task funds. A network retry of an agent
+run reuses its purchase reference while that task remains open. New runs are
+blocked in the UI when another purchase result is unresolved.
+
+The reproducible browser fixture test is `scripts/qa/task-workspace.cjs`. Run it
+beside `pnpm dev` with Playwright available (or set `PLAYWRIGHT_MODULE_PATH` and,
+if needed, `PLAYWRIGHT_EXECUTABLE_PATH`). It intercepts every API request and uses
+a test wallet; it does not exercise a real signature verification or payment.
+
+### Runtime boundaries
+
 - Hosted state uses Supabase Postgres with atomic reservation RPCs; SQLite is
   retained only for local/test operation.
 - Backend-held disposable devnet task keys are encrypted before persistence

@@ -96,6 +96,18 @@ dependency family.
 
 ## M6 — verification and demo handoff (`in progress`)
 
+### Product continuation — 16 October 2026
+
+- Owner-scoped, paginated task history is available through `GET /api/tasks` and the live workspace. List responses contain only public task identifiers, payment addresses, and confirmed funding signatures.
+- `GET /api/auth/session` restores a valid signed session only when it matches the connected wallet. Disconnect clears the HttpOnly cookie.
+- Selected tasks use `/app?task=<id>` and reopen after refresh; Back/Forward restores selection. Every task snapshot remains protected by server ownership checks.
+- Funding confirmation now requires HTTP 200 plus `state: confirmed` and the exact submitted signature. HTTP 202 no longer enables the agent.
+- Submitted funding signatures are retained in browser storage as public recovery hints. Only the authenticated server record establishes confirmation. Refresh status checks the submitted transaction without sending another transfer. Browser storage can be unavailable or cleared, so this recovery is limited to that browser until confirmation is stored on the server.
+- Agent request retries within the open task reuse their purchase reference after network failure. A new run after a completed result requires explicit confirmation; unresolved payments block a fresh reference in the UI. This is additional UX protection alongside backend idempotency, not a replacement for it.
+- Task summaries show settled spend, held reservations, and unspent/unreserved task funds. Specialist availability remains separate in the tree. Public task JSON exports include payment outcomes and signatures without signer material or raw payment credentials.
+- Browser fixture QA covers session/task reload, history and Back navigation, HTTP 202 behavior, retry reference reuse, export download, and mobile overflow. A read-only live Supabase query verified the selected columns and owner-scoped query path. No funding transaction or paid settlement was broadcast.
+- Demo recording and onchain evidence remain deferred as requested. M2/M3 evidence gates remain open.
+
 Acceptance:
 
 - Security and end-to-end tests cover the user acceptance cases.

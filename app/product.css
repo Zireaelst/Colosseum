@@ -223,3 +223,53 @@ button[aria-busy="true"]::before { content: ""; width: 13px; height: 13px; flex:
   .workspace .actions { flex-direction: column; align-items: stretch; }
 }
 @media (prefers-reduced-motion: reduce) { button[aria-busy="true"]::before { animation: none; } .hero-motion-control { display: none; } }
+
+/* Saved tasks and operational feedback */
+.task-history { margin: 24px 0; border: 1px solid #39472f; border-radius: 9px; overflow: hidden; }
+.task-history-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px; border-bottom: 1px solid #323c2b; }
+.task-history-heading h3 { margin: 0; font-size: 13px; font-weight: 550; }
+.task-history-heading p { margin-top: 6px; font-size: 11px; color: #a4b194; }
+.task-history-heading button { white-space: nowrap; }
+.task-history-list { list-style: none; margin: 0; padding: 0; }
+.task-history-list li + li { border-top: 1px solid #303a27; }
+.task-history-list a { display: flex; align-items: center; gap: 14px; min-height: 70px; padding: 14px 18px; transition: background .15s ease; }
+.task-history-list a:hover { background: #222c19; }
+.task-history-list a[aria-current="true"] { background: #28351c; box-shadow: inset 3px 0 0 #c8ff57; }
+.task-history-list a[aria-disabled="true"] { opacity: .6; cursor: wait; }
+.task-history-list a > div { flex: 1; min-width: 0; }
+.task-history-list strong { font-size: 12px; font-weight: 500; }
+.task-history-list small { margin-top: 5px; font-size: 10px; color: #a6b395; }
+.history-task-icon { display: grid; place-items: center; width: 30px; height: 30px; border: 1px solid #4a5c37; border-radius: 7px; background: #202d15; color: #d2e9b8; font-size: 18px; }
+.task-history-pagination { display: flex; align-items: center; justify-content: flex-end; gap: 14px; padding: 12px 18px; border-top: 1px solid #303a27; }
+.task-history-pagination > span { color: #a3b58e; font-size: 11px; }
+.history-feedback { padding: 18px; font-size: 12px; color: #b1c39d; }
+.history-feedback p { margin-bottom: 12px; }
+.task-loading { padding: 24px; border: 1px solid #3c4c2e; border-radius: 8px; }
+.task-loading p { margin-top: 16px; font-size: 12px; color: #a8ba94; }
+.task-skeleton { display: block; width: 68%; height: 20px; margin-bottom: 10px; border-radius: 5px; background: #2d3922; }
+.task-skeleton + .task-skeleton { width: 42%; }
+.task-error { margin-top: 18px; padding: 14px; border: 1px solid #75443b; border-radius: 8px; background: #2c1b18; }
+.task-error p { font-size: 12px; }
+.task-error button { margin-top: 12px; }
+.task-dashboard-tools { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.task-title-row { display: flex; justify-content: space-between; gap: 20px; align-items: flex-start; margin: 26px 0 20px; }
+.task-title-row > div { min-width: 0; }
+.task-title-row h3 { line-height: 1.5; overflow-wrap: anywhere; margin-bottom: 8px; }
+.task-title-row code { font-size: 10px; color: #acba98; }
+.task-title-row button { flex-shrink: 0; }
+.task-summary-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); margin: 0; padding: 18px; gap: 20px; border: 1px solid #435337; border-radius: 8px; background: #1c2615; }
+.task-summary-grid > div { display: block; min-width: 0; padding: 0; border: 0; }
+.task-summary-grid dt { font-size: 10px; color: #b7c9a1; }
+.task-summary-grid dd { margin-top: 10px; font-size: clamp(18px,2vw,25px); font-weight: 500; color: #e5f1d9; overflow-wrap: anywhere; }
+.task-summary-grid dd span { display: block; margin-top: 5px; font-size: 10px; font-weight: 400; color: #afc29b; }
+.task-summary-note, .pending-funding-note { margin: 10px 0 18px; color: #b0c099; font-size: 11px; line-height: 1.6; }
+.workspace .card .pending-funding-note { margin-top: 14px; color: #e0cf96; }
+@media (max-width: 560px) {
+  .task-history-heading { align-items: flex-start; flex-direction: column; }
+  .task-history-list a { gap: 9px; flex-wrap: wrap; }
+  .task-history-list a .status-pill { margin-left: 39px; }
+  .task-history-list a > div { min-width: calc(100% - 50px); }
+  .task-title-row { flex-direction: column; }
+  .task-summary-grid { padding: 14px; gap: 10px; }
+  .task-summary-grid dt { line-height: 1.5; }
+}
