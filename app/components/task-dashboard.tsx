@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { hasUnresolvedPurchase, taskBudgetSummary } from "../../src/ui/task-summary";
+import { CopyableCode } from "./copyable-code";
+import { PaymentHistory } from "./payment-history";
 
 import {
   toTaskViewModel,
@@ -118,9 +120,9 @@ export function TaskDashboard(props: TaskDashboardProps) {
             <div><dt>Budget</dt><dd>10 test USDC</dd></div>
             <div><dt>Funding amount</dt><dd>{props.task.allocation} base units</dd></div>
             <div><dt>Wallet payer</dt><dd><code>{props.ownerWallet}</code></dd></div>
-            <div><dt>Task signer</dt><dd><code>{props.task.paymentAddress}</code></dd></div>
-            <div><dt>Recipient ATA</dt><dd><code>{props.task.paymentAta}</code></dd></div>
-            <div><dt>Mint</dt><dd><code>{props.task.mint}</code></dd></div>
+            <div><dt>Task signer</dt><dd><CopyableCode label="task payment address" value={props.task.paymentAddress} /></dd></div>
+            <div><dt>Recipient ATA</dt><dd><CopyableCode label="recipient token account" value={props.task.paymentAta} /></dd></div>
+            <div><dt>Mint</dt><dd><CopyableCode label="token mint" value={props.task.mint} /></dd></div>
           </dl>
 
           {!funded ? (
@@ -254,21 +256,7 @@ export function TaskDashboard(props: TaskDashboardProps) {
             <p className="empty">Merchant is not configured yet.</p>
           )}
 
-          {view.payments.length
-            ? view.payments.slice(-20).reverse().map((payment) => (
-              <div className="activity-row" key={payment.id}>
-                <i className={payment.tone} />
-                <div>
-                  <strong>{payment.serviceId} / {payment.resourceId} · {payment.amount} test USDC</strong>
-                  <small>{payment.label} · ref {payment.purchaseRef}</small>
-                  {payment.explorerUrl
-                    ? <a href={payment.explorerUrl} rel="noreferrer" target="_blank">Explorer ↗</a>
-                    : null}
-                </div>
-              </div>
-            ))
-            : <p className="empty">No payment attempt yet.</p>}
-          {view.payments.length > 20 ? <p className="task-summary-note">Showing the latest 20 of {view.payments.length} attempts. Export the task for the complete payment history.</p> : null}
+          <PaymentHistory payments={view.payments} />
 
           <div className="event-list">
             {view.events.slice(-6).reverse().map((event) => (

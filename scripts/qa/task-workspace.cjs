@@ -5,11 +5,12 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE_PATH || 'playwright')
 const wallet = '11111111111111111111111111111111';
 const signature = '1'.repeat(88);
 const accounts = ['task-a', 'task-b'].map((id, index) => ({ id, ownerWallet: wallet, paymentAddress: wallet, paymentAta: wallet, mint: '4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU', allocation: '10000000', ...(index === 0 ? { fundingSignature: signature } : {}) }));
+const paymentFixtures = Array.from({ length: 45 }, (_, index) => ({ id: `fixture-${index}`, state: ['settled', 'rejected', 'failed'][index % 3], amount: '1000', serviceId: 'research-api', resourceId: 'research-brief', purchaseRef: `fixture-ref-${index}`, rejectionCode: index % 3 === 1 ? 'BUDGET_EXCEEDED' : null, transactionSignature: index % 3 === 0 ? signature : null }));
 const snapshot = account => ({
   account,
   task: { expiresAt: 1792140000000, mandate: { purpose: `Saved research ${account.id}`, serviceId: 'research-api', resourceId: 'research-brief', maxAmount: '1000' } },
   delegations: [{ id: `${account.id}:manager`, parentId: null, allocation: '10000000', available: '3000000', status: 'active', services: ['research-api', 'analysis-api'] }, { id: `${account.id}:research`, parentId: `${account.id}:manager`, allocation: '4000000', available: '4000000', status: 'active', services: ['research-api'] }, { id: `${account.id}:analysis`, parentId: `${account.id}:manager`, allocation: '3000000', available: '3000000', status: 'active', services: ['analysis-api'] }],
-  payments: [], events: [], readiness: { ai: true, jev: false, merchant: true, rpc: true }, merchantPreview: null,
+  payments: paymentFixtures, events: [], readiness: { ai: true, jev: false, merchant: true, rpc: true }, merchantPreview: null,
 });
 
 (async () => {
@@ -20,6 +21,7 @@ const snapshot = account => ({
     const runs = [];
     let failFirstRun = true;
     await context.addInitScript(({ wallet, signature }) => {
+      Object.defineProperty(navigator, 'clipboard', { value: { writeText: async value => { window.qaCopiedValue = value; } }, configurable: true });
       let connected = localStorage.getItem('qa-wallet-connected') === 'yes';
       const account = { address: wallet, publicKey: new Uint8Array(32), chains: ['solana:devnet'], features: ['solana:signMessage', 'solana:signAndSendTransaction'] };
       const listeners = [];
@@ -70,6 +72,27 @@ const snapshot = account => ({
     assert.equal(runs[0].purchaseRef, runs[1].purchaseRef, 'A network retry must reuse its purchase reference');
     await page.reload();
     await page.getByRole('heading', { name: 'Saved research task-a', exact: true }).waitFor();
+    await page.getByLabel('Search this page').fill('missing-task');
+    await page.getByText('No tasks match on this page. Clear the filters or check another page.', { exact: true }).waitFor();
+    await page.getByRole('button', { name: 'Clear task filters' }).click();
+    await page.getByLabel('Funding status', { exact: true }).selectOption('funded');
+    assert.equal(await page.getByRole('link', { name: /Task task-b/ }).count(), 0);
+    await page.getByLabel('Funding status', { exact: true }).selectOption('all');
+    await page.getByRole('button', { name: 'Next payments' }).click();
+    await page.getByText('Page 2 of 3', { exact: true }).waitFor();
+    await page.getByLabel('Payment status', { exact: true }).selectOption('rejected');
+    await page.getByText('15 matching attempts', { exact: true }).waitFor();
+    assert.equal(new URL(page.url()).searchParams.get('paymentStatus'), 'rejected');
+    await page.reload();
+    await page.getByRole('heading', { name: 'Saved research task-a', exact: true }).waitFor();
+    assert.equal(await page.getByLabel('Payment status', { exact: true }).inputValue(), 'rejected');
+    await page.getByText('Details & receipt', { exact: true }).first().click();
+    await page.getByText(/This request exceeds the specialist’s available budget/).first().waitFor();
+    await page.getByRole('button', { name: 'Copy purchase reference', exact: true }).first().click();
+    assert.equal(await page.evaluate(() => window.qaCopiedValue), 'fixture-ref-43');
+    await page.getByLabel('Search payments', { exact: true }).fill('missing-reference');
+    await page.getByText('No attempts match these filters.', { exact: true }).waitFor();
+    await page.getByRole('button', { name: 'Clear payment filters' }).click();
     const downloadEvent = page.waitForEvent('download');
     await page.getByRole('button', { name: 'Export task' }).click();
     const download = await downloadEvent;
@@ -85,6 +108,6 @@ const snapshot = account => ({
     await page.setViewportSize({ width: 390, height: 844 });
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
     assert.deepEqual(errors, []);
-    console.log('PASS: wallet session/task restore, history navigation/back, pending 202 guard, idempotent run retry, receipt export, mobile overflow, no JavaScript errors. All APIs and wallet actions were fixtures.');
+    console.log('PASS: session/task restore, history navigation/back, pending 202 guard, idempotent retry, task search/status filters, payment pagination/filter URL restore, rejection explanations, copy/export, mobile overflow, no JavaScript errors. All APIs and wallet actions were fixtures.');
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });
