@@ -273,3 +273,36 @@ button[aria-busy="true"]::before { content: ""; width: 13px; height: 13px; flex:
   .task-summary-grid { padding: 14px; gap: 10px; }
   .task-summary-grid dt { line-height: 1.5; }
 }
+
+.history-filter-bar { display: grid; grid-template-columns: minmax(0,1fr) 180px; gap: 14px; padding: 18px; border-bottom: 1px solid #34412b; }
+.history-filter-bar label { display: grid; min-width: 0; gap: 7px; font-size: 10px; color: #b2c39f; }
+.history-filter-bar input, .history-filter-bar select { width: 100%; min-width: 0; min-height: 44px; padding: 10px 12px; border: 1px solid #4a5a3b; border-radius: 6px; background: #11170d; color: #edf5e4; font-size: 16px; }
+.history-filter-bar input::placeholder { font-size: 11px; color: #9cab8b; }
+.history-filter-bar select { font-size: 12px; }
+.payment-history > .history-filter-bar { padding: 18px 0 14px; grid-template-columns: minmax(0,1fr) 130px; }
+.payment-result-count { margin: 14px 0; font-size: 11px; color: #adbf98; font-variant-numeric: tabular-nums; }
+.payment-attempt { padding: 16px 0; border-top: 1px solid #34412b; }
+.payment-attempt-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.payment-attempt-heading > div { min-width: 0; }
+.payment-attempt-heading strong { display: block; font-size: 12px; overflow-wrap: anywhere; }
+.payment-attempt-heading > div > span { display: block; margin-top: 5px; font-size: 10px; color: #acba9a; }
+.payment-attempt-amount { margin-top: 12px; font-size: 18px; color: #e3eed7 !important; font-variant-numeric: tabular-nums; }
+.payment-attempt-amount span { font-size: 10px; color: #aabb96; }
+.payment-receipt { margin-top: 10px; }
+.payment-receipt summary { display: list-item; width: fit-content; padding: 12px 0; min-height: 44px; cursor: pointer; font-size: 11px; color: #c8dfae; }
+.payment-receipt > p { font-size: 11px; margin-block: 10px; line-height: 1.7; }
+.receipt-label { display: block; margin-top: 14px; margin-bottom: 8px; font-size: 10px; color: #acbd96; }
+.copyable-code, .workspace .card dl .copyable-code { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: start; gap: 8px; padding: 0; border: 0; background: none; }
+.copyable-code code { min-width: 0; padding-top: 9px; overflow-wrap: anywhere; font-size: 10px; line-height: 1.65; user-select: all; }
+.copyable-code button { padding: 7px 10px; min-height: 36px; font-size: 10px; }
+.copy-feedback { grid-column: 1 / -1; color: #c7e0ad; font-size: 10px; line-height: 1.6; }
+.copy-feedback:empty { display: none; }
+.payment-empty { padding: 16px 0; }
+.payment-empty p { font-size: 12px; line-height: 1.7; margin-bottom: 12px; }
+.payment-history .task-history-pagination { padding-inline: 0; }
+@media (max-width: 560px) {
+  .history-filter-bar, .payment-history > .history-filter-bar { grid-template-columns: 1fr; }
+  .history-filter-bar select { font-size: 16px; }
+  .copyable-code button { min-height: 44px; }
+  .payment-attempt-heading { flex-wrap: wrap; }
+}
