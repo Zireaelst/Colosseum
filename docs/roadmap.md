@@ -98,6 +98,9 @@ dependency family.
 
 ### Product continuation — 16 October 2026
 
+- Task history now supports current-page search by task ID/address/signature and funding-status filters. Payment history searches the selected snapshot, filters by state, and paginates all matches in groups of 20 instead of permanently hiding older attempts. Filter values are restored from the URL.
+- Expandable payment receipts explain rejection/uncertainty, expose recorded decision codes, and provide copy actions for public references/signatures. Funding addresses and the mint also have copy controls. README now documents capabilities, usage, configuration, API routes, verification, and remaining limitations together.
+
 - Owner-scoped, paginated task history is available through `GET /api/tasks` and the live workspace. List responses contain only public task identifiers, payment addresses, and confirmed funding signatures.
 - `GET /api/auth/session` restores a valid signed session only when it matches the connected wallet. Disconnect clears the HttpOnly cookie.
 - Selected tasks use `/app?task=<id>` and reopen after refresh; Back/Forward restores selection. Every task snapshot remains protected by server ownership checks.
