@@ -19,7 +19,12 @@ import {
 
 import { TaskDashboard, type AgentRunView } from "./components/task-dashboard";
 import { AppProgress } from "./components/app-progress";
+import { TaskHistory } from "./components/task-history";
+import type { TaskHistoryEntry } from "../src/ui/task-history";
+import type { PublicTaskAccount } from "../src/solana/task-accounts";
+import { recoverFundingState, readSubmittedFunding, rememberSubmittedFunding } from "../src/ui/task-recovery";
 import type { TaskSnapshotDto } from "../src/ui/task-view-model";
+import { checkFundingConfirmation } from "../src/ui/funding-status";
 import {
   shouldRenderWalletLoading,
   walletEmptyState,
@@ -119,6 +124,7 @@ export function WalletConnect() {
     mint: string;
     allocation: string;
   } | null>(null);
+  const [retryRun, setRetryRun] = useState<{ taskId: string; prompt: string; purchaseRef: string } | null>(null);
   const [taskError, setTaskError] = useState<string | null>(null);
   const [fundingState, setFundingState] = useState<
     "idle" | "signing" | "confirming" | "confirmed"
@@ -139,6 +145,16 @@ export function WalletConnect() {
   const [creatingTask, setCreatingTask] = useState(false);
   const [purposeError, setPurposeError] = useState<string | null>(null);
   const purposeInput = useRef<HTMLTextAreaElement>(null);
+  const [history, setHistory] = useState<TaskHistoryEntry[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyError, setHistoryError] = useState<string | null>(null);
+  const [historyOffset, setHistoryOffset] = useState(0);
+  const [historyHasMore, setHistoryHasMore] = useState(false);
+  const [loadingTask, setLoadingTask] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const activeWallet = useRef<string | null>(null);
+  const activeTask = useRef<string | null>(null);
+  const historyVersion = useRef(0);
 
   useEffect(() => {
     setHydrated(true);
@@ -146,14 +162,135 @@ export function WalletConnect() {
   }, []);
 
   useEffect(() => {
-    if (!connected || connected.account.address !== connectedAccount?.address) {
-      setConnectedAccount(null);
+    let cancelled = false;
+    activeWallet.current = connected?.account.address ?? null;
+    setConnectedAccount(null);
+    clearTask();
+    setHistory([]);
+    setHistoryLoading(false);
+    setHistoryError(null);
+    if (connected) {
+      const account = connected.account;
+      fetch("/api/auth/session", { cache: "no-store" }).then(async response => {
+        if (!response.ok) return;
+        const session = await response.json();
+        if (!cancelled && session.address === account.address) setConnectedAccount(account);
+      }).catch(() => undefined);
     }
-  }, [connected, connectedAccount?.address]);
+    return () => { cancelled = true; };
+  }, [connected?.account.address]);
 
-  async function refreshTask(taskId: string) {
-    const response = await fetch(`/api/tasks/${taskId}`);
-    if (response.ok) setSnapshot(await response.json());
+  useEffect(() => {
+    if (!connectedAccount) return;
+    void loadHistory(0);
+    const restore = () => {
+      const id = new URL(window.location.href).searchParams.get("task");
+      if (id) void openTask(id, false);
+      else clearTask();
+    };
+    restore();
+    window.addEventListener("popstate", restore);
+    return () => window.removeEventListener("popstate", restore);
+  }, [connectedAccount?.address]);
+
+  function clearTask() {
+    activeTask.current = null;
+    setTask(null);
+    setSnapshot(null);
+    setFundingSignature(null);
+    setFundingState("idle");
+    setAgentResult(null);
+    setRetryRun(null);
+    setTaskError(null);
+    setLoadingTask(false);
+  }
+
+  function setTaskUrl(id: string | null) {
+    const url = new URL(window.location.href);
+    if (id) url.searchParams.set("task", id);
+    else url.searchParams.delete("task");
+    if (url.href !== window.location.href) window.history.pushState(null, "", url);
+  }
+
+  async function loadHistory(offset = 0) {
+    const owner = activeWallet.current;
+    const version = ++historyVersion.current;
+    setHistoryLoading(true);
+    setHistoryError(null);
+    try {
+      const response = await fetch(`/api/tasks?offset=${offset}`, { cache: "no-store" });
+      if (response.status === 401) throw new Error("Your session expired. Disconnect and reconnect your wallet.");
+      if (!response.ok) throw new Error("Could not load saved tasks. Try again.");
+      const result = await response.json();
+      if (owner !== activeWallet.current || version !== historyVersion.current) return;
+      setHistory(result.tasks);
+      setHistoryHasMore(result.hasMore);
+      setHistoryOffset(offset);
+    } catch (cause) {
+      if (owner === activeWallet.current && version === historyVersion.current) setHistoryError(cause instanceof Error ? cause.message : "Could not load tasks.");
+    } finally {
+      if (owner === activeWallet.current && version === historyVersion.current) setHistoryLoading(false);
+    }
+  }
+
+  async function openTask(id: string, navigate = true) {
+    clearTask();
+    activeTask.current = id;
+    setLoadingTask(true);
+    if (navigate) setTaskUrl(id);
+    try {
+      await refreshTask(id, true);
+    } catch (cause) {
+      if (activeTask.current === id) setTaskError(cause instanceof Error ? cause.message : "Could not open task.");
+    } finally {
+      if (activeTask.current === id) setLoadingTask(false);
+    }
+  }
+
+  async function refreshTask(taskId: string, restoreFunding = false) {
+    const owner = activeWallet.current;
+    const response = await fetch(`/api/tasks/${encodeURIComponent(taskId)}`, { cache: "no-store" });
+    if (response.status === 401) throw new Error("Your session expired. Disconnect and reconnect your wallet.");
+    if (!response.ok) throw new Error("Could not open this task. Check your connection and wallet, then try again.");
+    const result = await response.json() as NonNullable<typeof snapshot> & { account: PublicTaskAccount };
+    if (owner !== activeWallet.current || activeTask.current !== taskId) return;
+    setSnapshot(result);
+    setTask(result.account);
+    if (restoreFunding || result.account.fundingSignature) {
+      const funding = recoverFundingState(result.account, readSubmittedFunding(taskId));
+      setFundingState(funding.state);
+      setFundingSignature(funding.signature);
+    }
+  }
+
+  async function refreshSelectedTask() {
+    if (!task || refreshing) return;
+    const id = task.id;
+    setRefreshing(true);
+    setTaskError(null);
+    try {
+      if (fundingState === "confirming" && fundingSignature) {
+        const state = await checkFundingConfirmation(id, fundingSignature);
+        if (state === "unauthorized") throw new Error("Your session expired. Disconnect and reconnect your wallet.");
+        if (state === "rejected") throw new Error("Funding could not be attributed to this task. Check the submitted transfer; do not pay again.");
+      }
+      await refreshTask(id, true);
+      await loadHistory(historyOffset);
+    } catch (cause) {
+      if (activeTask.current === id) setTaskError(cause instanceof Error ? cause.message : "Could not refresh task.");
+    } finally { setRefreshing(false); }
+  }
+
+  async function disconnectWallet() {
+    setTaskError(null);
+    try {
+      const response = await fetch("/api/auth/session", { method: "DELETE" });
+      if (!response.ok) throw new Error("Sign out failed");
+      await disconnect.dispatchAsync();
+      setConnectedAccount(null);
+      clearTask();
+      setTaskUrl(null);
+    } catch { setTaskError("Could not disconnect. Please try again."); }
   }
 
   async function createTask() {
@@ -181,8 +318,11 @@ export function WalletConnect() {
       });
       if (!response.ok) throw new Error("Could not create the task. Please try again.");
       const created = await response.json();
+      activeTask.current = created.id;
       setTask(created);
+      setTaskUrl(created.id);
       await refreshTask(created.id);
+      await loadHistory(0);
     } catch {
       setTaskError("Could not create the task. Check your connection and try again.");
     } finally {
@@ -191,7 +331,7 @@ export function WalletConnect() {
   }
 
   async function fundTask() {
-    if (!task || !connectedAccount) return;
+    if (!task || !connectedAccount || fundingState !== "idle") return;
     setTaskError(null);
     let submittedSignature: string | null = null;
     try {
@@ -206,31 +346,42 @@ export function WalletConnect() {
         base64ToBytes(payload.transaction),
       );
       submittedSignature = transactionSignature;
+      rememberSubmittedFunding(task.id, transactionSignature);
+      if (activeTask.current !== task.id) return;
       setFundingSignature(transactionSignature);
       setFundingState("confirming");
 
       for (let attempt = 0; attempt < 8; attempt += 1) {
-        const statusResponse = await fetch(`/api/tasks/${task.id}/funding-status`, {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ signature: transactionSignature }),
-        });
-        if (statusResponse.ok) {
+        const status = await checkFundingConfirmation(task.id, transactionSignature);
+        if (activeTask.current !== task.id) return;
+        if (status === "confirmed") {
           setFundingState("confirmed");
           await refreshTask(task.id);
           return;
         }
+        if (status === "rejected") throw new Error("Funding evidence did not match this task. The submitted transfer needs review; do not send another payment.");
+        if (status === "unauthorized") throw new Error("Your session expired. Reconnect your wallet to check the submitted transfer.");
         await new Promise((resolve) => window.setTimeout(resolve, 2_000));
       }
       throw new Error("Transaction submitted; confirmation is still pending");
     } catch (cause) {
-      setTaskError(cause instanceof Error ? cause.message : "Funding failed");
-      setFundingState(submittedSignature ? "confirming" : "idle");
+      if (activeTask.current === task.id) {
+        setTaskError(cause instanceof Error ? cause.message : "Funding failed");
+        setFundingState(submittedSignature ? "confirming" : "idle");
+      }
     }
   }
 
   async function runDemo(prompt: string) {
-    if (!task) return;
+    if (!task || actionPending) return;
+    const cleanPrompt = prompt.trim();
+    if (retryRun && (retryRun.taskId !== task.id || retryRun.prompt !== cleanPrompt)) {
+      setTaskError("Retry the previous instructions first, or refresh the task to inspect the last attempt.");
+      return;
+    }
+    if (!retryRun && agentResult && !window.confirm("Start another agent run? This may request another paid service within the task's permissions.")) return;
+    const run = retryRun ?? { taskId: task.id, prompt: cleanPrompt, purchaseRef: `purchase-${crypto.randomUUID()}` };
+    setRetryRun(run);
     setActionPending(true);
     setTaskError(null);
     try {
@@ -238,16 +389,18 @@ export function WalletConnect() {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          prompt,
-          purchaseRef: `purchase-${crypto.randomUUID()}`,
+          prompt: run.prompt,
+          purchaseRef: run.purchaseRef,
         }),
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error ?? "Agent run failed");
+      if (activeTask.current !== run.taskId) return;
       setAgentResult(result as AgentRunView);
+      setRetryRun(null);
       await refreshTask(task.id);
     } catch (cause) {
-      setTaskError(cause instanceof Error ? cause.message : "Agent run failed");
+      if (activeTask.current === run.taskId) setTaskError(`${cause instanceof Error ? cause.message : "Agent run failed"}. Retrying the same instructions will reuse the purchase reference.`);
     } finally {
       setActionPending(false);
     }
@@ -286,9 +439,11 @@ export function WalletConnect() {
         />
         <div className="wallet-session-row">
           <div><strong>Wallet ownership verified</strong><code>{connectedAccount.address}</code></div>
-          <button className="secondary" disabled={disconnect.isRunning} onClick={() => disconnect.dispatch()} type="button">Disconnect</button>
+          <button className="secondary" disabled={disconnect.isRunning || fundingState === "signing" || actionPending || creatingTask} onClick={disconnectWallet} type="button">Disconnect</button>
         </div>
-        {!task ? (
+        <TaskHistory entries={history} selectedId={task?.id} loading={historyLoading} error={historyError} offset={historyOffset} hasMore={historyHasMore} disabled={actionPending || creatingTask || fundingState === "signing"} onPage={offset => void loadHistory(offset)} onSelect={id => void openTask(id)} onNew={() => { clearTask(); setTaskUrl(null); }} />
+        {loadingTask ? <div className="task-loading" aria-live="polite"><span className="task-skeleton" /><span className="task-skeleton" /><p>Opening your saved task…</p></div> : null}
+        {!task && !loadingTask ? (
           <form className="task-setup" noValidate onSubmit={(event) => { event.preventDefault(); void createTask(); }}>
             <label htmlFor="task-purpose">What should this task accomplish?</label>
             <textarea
@@ -310,18 +465,22 @@ export function WalletConnect() {
           </form>
         ) : null}
         {task && snapshot ? <TaskDashboard
+          key={task.id}
           actionPending={actionPending}
           agentResult={agentResult}
           fundingSignature={fundingSignature}
           fundingState={fundingState}
           onCancel={cancelResearch}
           onFund={fundTask}
+          onRefresh={refreshSelectedTask}
+          refreshing={refreshing}
+          retryPurchaseRef={retryRun?.purchaseRef}
           onRun={runDemo}
           ownerWallet={connectedAccount.address}
           snapshot={snapshot}
           task={task}
         /> : null}
-        {taskError ? <small aria-live="polite" className="error">{taskError}</small> : null}
+        {taskError ? <div className="task-error" aria-live="polite"><p className="error">{taskError}</p>{activeTask.current && !task ? <button className="secondary" onClick={() => void openTask(activeTask.current as string, false)} type="button">Reopen task</button> : null}</div> : null}
       </div>
     );
   }

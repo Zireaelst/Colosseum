@@ -1,5 +1,6 @@
 export interface TaskSnapshotDto {
   task: {
+    expiresAt?: number;
     mandate: {
       purpose: string;
       serviceId: string;

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { hasUnresolvedPurchase, taskBudgetSummary } from "../../src/ui/task-summary";
 
 import {
   toTaskViewModel,
@@ -35,6 +36,9 @@ interface TaskDashboardProps {
   onFund(): void;
   onRun(prompt: string): void;
   onCancel(): void;
+  onRefresh(): void;
+  refreshing: boolean;
+  retryPurchaseRef?: string;
 }
 
 const defaultPrompt = "Research the paid demo source and summarize the finding.";
@@ -44,6 +48,35 @@ export function TaskDashboard(props: TaskDashboardProps) {
   const view    = useMemo(() => toTaskViewModel(props.snapshot), [props.snapshot]);
   const readiness = Object.entries(props.snapshot.readiness);
   const funded  = props.fundingState === "confirmed";
+  const totals = taskBudgetSummary(props.task.allocation, props.snapshot.payments);
+  const unresolvedPurchase = hasUnresolvedPurchase(props.snapshot.payments, props.retryPurchaseRef);
+  const [exportError, setExportError] = useState<string | null>(null);
+
+  function exportTask() {
+    setExportError(null);
+    try {
+      const receipt = {
+        product: "Pactlet",
+        network: "Solana devnet",
+        enforcement: "Trusted backend; custodial prototype",
+        taskId: props.task.id,
+        purpose: view.mandate.purpose,
+        mint: props.task.mint,
+        allocationBaseUnits: props.task.allocation,
+        fundingSignature: props.fundingSignature,
+        fundingStatus: props.fundingState,
+        payments: props.snapshot.payments.map(payment => ({ id: payment.id, serviceId: payment.serviceId, resourceId: payment.resourceId, amountBaseUnits: payment.amount, state: payment.state, rejectionCode: payment.rejectionCode, transactionSignature: payment.transactionSignature })),
+      };
+      const url = URL.createObjectURL(new Blob([JSON.stringify(receipt, null, 2)], { type: "application/json" }));
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `pactlet-task-${props.task.id}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch { setExportError("Could not export this task. Please try again."); }
+  }
 
   return (
     <div className="dashboard">
@@ -53,10 +86,14 @@ export function TaskDashboard(props: TaskDashboardProps) {
           <span className="eyebrow">Live task control</span>
           <h2>Budget authority</h2>
         </div>
-        <span className={`status-pill ${funded ? "success" : "warning"}`}>
-          {funded ? "funded" : "awaiting devnet funding"}
-        </span>
+        <div className="task-dashboard-tools"><span className={`status-pill ${funded ? "success" : "warning"}`}>{funded ? "Funding confirmed" : props.fundingState === "confirming" ? "Confirmation pending" : "Awaiting funding"}</span><button className="secondary" aria-busy={props.refreshing} disabled={props.refreshing || props.actionPending || props.fundingState === "signing"} onClick={props.onRefresh} type="button">Refresh status</button></div>
       </div>
+
+      <div className="task-title-row"><div><h3>{view.mandate.purpose}</h3><code translate="no">{props.task.id}</code></div><button className="secondary" onClick={exportTask} type="button">Export task ↓</button></div>
+      {exportError ? <p aria-live="polite" className="error">{exportError}</p> : null}
+      <dl className="task-summary-grid"><div><dt>Settled spend</dt><dd>{totals.spent}<span>test USDC</span></dd></div><div><dt>Reserved / pending</dt><dd>{totals.reserved}<span>test USDC</span></dd></div><div><dt>Unspent, unreserved</dt><dd>{totals.remaining}<span>test USDC</span></dd></div></dl>
+      <p className="task-summary-note">Task totals include delegated budgets. Each specialist’s available amount is shown in the delegation tree.</p>
+      {props.snapshot.task.expiresAt ? <p className="task-summary-note">Permission expires <time dateTime={new Date(props.snapshot.task.expiresAt).toISOString()}>{new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(props.snapshot.task.expiresAt)}</time>.</p> : null}
 
       {/* ── Runtime readiness chips ── */}
       <div className="readiness" aria-label="Runtime readiness">
@@ -79,6 +116,7 @@ export function TaskDashboard(props: TaskDashboardProps) {
             <div><dt>Per purchase</dt><dd>up to {view.mandate.maxAmount} test USDC</dd></div>
             <div><dt>Network</dt><dd>Solana devnet</dd></div>
             <div><dt>Budget</dt><dd>10 test USDC</dd></div>
+            <div><dt>Funding amount</dt><dd>{props.task.allocation} base units</dd></div>
             <div><dt>Wallet payer</dt><dd><code>{props.ownerWallet}</code></dd></div>
             <div><dt>Task signer</dt><dd><code>{props.task.paymentAddress}</code></dd></div>
             <div><dt>Recipient ATA</dt><dd><code>{props.task.paymentAta}</code></dd></div>
@@ -110,6 +148,7 @@ export function TaskDashboard(props: TaskDashboardProps) {
               {funded ? "View confirmed funding ↗" : "View pending funding ↗"}
             </a>
           ) : null}
+          {props.fundingState === "confirming" ? <p className="pending-funding-note">Your transaction was submitted. Use Refresh status to check it again; this will not send another transfer.</p> : null}
         </article>
 
         {/* Delegation tree */}
@@ -163,14 +202,14 @@ export function TaskDashboard(props: TaskDashboardProps) {
             name="agentPrompt"
             maxLength={2000}
             onChange={(e) => setPrompt(e.target.value)}
-            onKeyDown={(event) => { if ((event.metaKey || event.ctrlKey) && event.key === "Enter" && funded && !props.actionPending && prompt.trim()) { event.preventDefault(); props.onRun(prompt.trim()); } }}
+            onKeyDown={(event) => { if ((event.metaKey || event.ctrlKey) && event.key === "Enter" && funded && !unresolvedPurchase && !props.actionPending && prompt.trim()) { event.preventDefault(); props.onRun(prompt.trim()); } }}
             rows={4}
             value={prompt}
           />
           <div className="actions">
             <button
               aria-busy={props.actionPending}
-              disabled={!funded || props.actionPending || !prompt.trim()}
+              disabled={!funded || unresolvedPurchase || props.actionPending || !prompt.trim()}
               onClick={() => props.onRun(prompt)}
               type="button"
             >
@@ -188,6 +227,7 @@ export function TaskDashboard(props: TaskDashboardProps) {
           {!funded ? (
             <small>Fund the task before an agent can request a paid service.</small>
           ) : null}
+          {unresolvedPurchase ? <small>A purchase result is pending. Inspect its receipt before starting another run; its reserved budget remains held.</small> : null}
           {props.agentResult ? (
             <div className="agent-result">
               <div className="run-meta">
@@ -215,7 +255,7 @@ export function TaskDashboard(props: TaskDashboardProps) {
           )}
 
           {view.payments.length
-            ? view.payments.map((payment) => (
+            ? view.payments.slice(-20).reverse().map((payment) => (
               <div className="activity-row" key={payment.id}>
                 <i className={payment.tone} />
                 <div>
@@ -228,6 +268,7 @@ export function TaskDashboard(props: TaskDashboardProps) {
               </div>
             ))
             : <p className="empty">No payment attempt yet.</p>}
+          {view.payments.length > 20 ? <p className="task-summary-note">Showing the latest 20 of {view.payments.length} attempts. Export the task for the complete payment history.</p> : null}
 
           <div className="event-list">
             {view.events.slice(-6).reverse().map((event) => (
