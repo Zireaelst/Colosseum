@@ -19,6 +19,19 @@ afterEach(() => {
 });
 
 describe("TaskAccountStore", () => {
+  test("lists only the requesting owner's task metadata, newest first and without signer fields", async () => {
+    const store = new TaskAccountStore();
+    stores.push(store);
+    const first = await store.create("owner-a");
+    await store.create("owner-b");
+    const second = await store.create("owner-a");
+    store.markFunded(first.id, "funding-proof");
+    expect(await store.listForOwner("owner-a")).toEqual([
+      { id: second.id, paymentAddress: second.paymentAddress },
+      { id: first.id, paymentAddress: first.paymentAddress, fundingSignature: "funding-proof" },
+    ]);
+    expect(await store.listForOwner("unknown-owner")).toEqual([]);
+  });
   test("creates distinct disposable devnet accounts without exposing key material", async () => {
     const store = new TaskAccountStore();
     const first = await store.create("wallet-owner");

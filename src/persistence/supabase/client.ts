@@ -1,4 +1,6 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { DEVNET_USDC_MINT, SOLANA_DEVNET_NETWORK } from "../../policy/payment-terms";
+import { TASK_HISTORY_PAGE_SIZE } from "../../ui/task-history";
 
 export interface TaskAccountDatabaseRow {
   id: string;
@@ -17,6 +19,7 @@ export interface TaskAccountDatabaseRow {
 }
 
 export interface SupabaseTaskAccountGateway {
+  listTaskAccounts(ownerWallet: string, offset: number): Promise<Array<Pick<TaskAccountDatabaseRow, "id" | "payment_address" | "funding_signature">>>;
   insertTaskAccount(row: TaskAccountDatabaseRow): Promise<void>;
   findTaskAccount(id: string): Promise<TaskAccountDatabaseRow | null>;
   markTaskFunded(id: string, signature: string): Promise<boolean>;
@@ -34,6 +37,19 @@ export function createPactletSupabaseClient(
 
 export class SupabaseGateway implements SupabaseTaskAccountGateway {
   constructor(private readonly client: SupabaseClient) {}
+
+  async listTaskAccounts(ownerWallet: string, offset: number) {
+    const { data, error } = await this.client.from("task_accounts")
+      .select("id,payment_address,funding_signature")
+      .eq("owner_wallet", ownerWallet)
+      .eq("network", SOLANA_DEVNET_NETWORK)
+      .eq("mint", DEVNET_USDC_MINT)
+      .order("created_at_ms", { ascending: false })
+      .order("id", { ascending: false })
+      .range(offset, offset + TASK_HISTORY_PAGE_SIZE);
+    if (error) throw new Error("Task history lookup failed");
+    return (data ?? []) as Array<Pick<TaskAccountDatabaseRow, "id" | "payment_address" | "funding_signature">>;
+  }
 
   async insertTaskAccount(row: TaskAccountDatabaseRow): Promise<void> {
     const { error } = await this.client.from("task_accounts").insert(row);

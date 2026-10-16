@@ -9,6 +9,7 @@ import type {
   TaskSnapshot,
 } from "../ledger/ledger";
 import type { PublicTaskAccount } from "../solana/task-accounts";
+import type { TaskHistoryEntry } from "../ui/task-history";
 
 export interface LedgerStore {
   createTask(input: CreateTaskInput): Promise<void>;
@@ -37,6 +38,7 @@ export interface LedgerStore {
 }
 
 export interface TaskAccountRepository {
+  listForOwner(ownerWallet: string, offset?: number): TaskHistoryEntry[] | Promise<TaskHistoryEntry[]>;
   create(ownerWallet: string): Promise<PublicTaskAccount>;
   signer(taskId: string): Promise<KeyPairSigner>;
   task(taskId: string): Promise<PublicTaskAccount>;

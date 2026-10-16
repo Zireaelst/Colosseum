@@ -19,6 +19,10 @@ class MemoryGateway implements SupabaseTaskAccountGateway {
     return this.rows.get(id) ?? null;
   }
 
+  async listTaskAccounts(ownerWallet: string, offset: number) {
+    return [...this.rows.values()].filter(row => row.owner_wallet === ownerWallet).reverse().slice(offset, offset + 21).map(row => ({ id: row.id, payment_address: row.payment_address, funding_signature: row.funding_signature }));
+  }
+
   async markTaskFunded(id: string, signature: string) {
     const row = this.rows.get(id);
     if (!row || (row.funding_signature && row.funding_signature !== signature)) {
@@ -30,6 +34,13 @@ class MemoryGateway implements SupabaseTaskAccountGateway {
 }
 
 describe("SupabaseTaskAccountStore", () => {
+  it("returns only public task history for its owner", async () => {
+    const gateway = new MemoryGateway();
+    const store = new SupabaseTaskAccountStore(gateway, randomBytes(32));
+    const task = await store.create("owner-a");
+    await store.create("owner-b");
+    expect(await store.listForOwner("owner-a")).toEqual([{ id: task.id, paymentAddress: task.paymentAddress }]);
+  });
   it("stores only encrypted signer material and reconstructs the same signer", async () => {
     const gateway = new MemoryGateway();
     const store = new SupabaseTaskAccountStore(gateway, randomBytes(32));

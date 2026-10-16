@@ -14,6 +14,7 @@ import {
   encryptSignerSeed,
 } from "../../solana/task-signer-vault";
 import type { PublicTaskAccount } from "../../solana/task-accounts";
+import type { TaskHistoryEntry } from "../../ui/task-history";
 import type {
   SupabaseTaskAccountGateway,
   TaskAccountDatabaseRow,
@@ -21,6 +22,11 @@ import type {
 
 export class SupabaseTaskAccountStore implements TaskAccountRepository {
   private readonly masterKey: Uint8Array;
+
+  async listForOwner(ownerWallet: string, offset = 0): Promise<TaskHistoryEntry[]> {
+    const rows = await this.gateway.listTaskAccounts(ownerWallet, offset);
+    return rows.map(row => ({ id: row.id, paymentAddress: row.payment_address, ...(row.funding_signature ? { fundingSignature: row.funding_signature } : {}) }));
+  }
 
   constructor(
     private readonly gateway: SupabaseTaskAccountGateway,

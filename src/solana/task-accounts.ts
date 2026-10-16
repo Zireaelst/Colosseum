@@ -10,6 +10,7 @@ import {
   type KeyPairSigner,
 } from "@solana/kit";
 import Database from "better-sqlite3";
+import { TASK_HISTORY_PAGE_SIZE, type TaskHistoryEntry } from "../ui/task-history";
 
 import { DEVNET_USDC_MINT, SOLANA_DEVNET_NETWORK } from "../policy/payment-terms";
 import {
@@ -90,6 +91,11 @@ export class TaskAccountStore {
 
   close(): void {
     this.database.close();
+  }
+
+  listForOwner(ownerWallet: string, offset = 0): TaskHistoryEntry[] {
+    const rows = this.database.prepare(`SELECT id, payment_address, funding_signature FROM task_accounts WHERE owner_wallet = ? AND network = ? AND mint = ? ORDER BY rowid DESC LIMIT ? OFFSET ?`).all(ownerWallet, SOLANA_DEVNET_NETWORK, DEVNET_USDC_MINT, TASK_HISTORY_PAGE_SIZE + 1, offset) as Array<{ id: string; payment_address: string; funding_signature: string | null }>;
+    return rows.map(row => ({ id: row.id, paymentAddress: row.payment_address, ...(row.funding_signature ? { fundingSignature: row.funding_signature } : {}) }));
   }
 
   async create(ownerWallet: string): Promise<PublicTaskAccount> {
